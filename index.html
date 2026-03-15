@@ -1,0 +1,1858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#000814">
+<title>SYSTEM // HUNTER INTERFACE</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cyan:#00f5ff;--cyan-dim:#00c8d4;--cyan-glow:rgba(0,245,255,.15);
+  --blue:#0080ff;--blue-bright:#00b3ff;--electric:#1a9fff;
+  --navy:#000814;--navy2:#000d1a;--navy3:#001226;
+  --panel:rgba(0,18,38,.85);--panel-border:rgba(0,245,255,.25);--panel-border-bright:rgba(0,245,255,.6);
+  --text-primary:#e0f7ff;--text-secondary:rgba(180,230,255,.7);--text-muted:rgba(120,180,220,.5);
+  --xp-color:#a855f7;--xp-glow:rgba(168,85,247,.5);--success:#00ff88;--danger:#ff3366;--warn:#ffaa00;
+  --font-title:'Orbitron',sans-serif;--font-body:'Rajdhani',sans-serif;--font-ui:'Exo 2',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--navy);color:var(--text-primary);font-family:var(--font-body);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(0,80,180,.18) 0%,transparent 70%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(0,200,255,.08) 0%,transparent 60%);pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,245,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,245,255,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+
+/* ACTIVATION */
+#activation-screen{position:fixed;inset:0;background:#000814;z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;transition:opacity .8s ease}
+#activation-screen.fade-out{opacity:0;pointer-events:none}
+.activation-logo{font-family:var(--font-title);font-size:clamp(22px,5vw,42px);font-weight:900;color:var(--cyan);text-shadow:0 0 30px var(--cyan),0 0 60px rgba(0,245,255,.4);letter-spacing:8px}
+.activation-sub{font-family:var(--font-ui);font-size:13px;color:var(--text-secondary);letter-spacing:4px}
+.activation-bar-wrap{width:280px;height:3px;background:rgba(0,245,255,.1);border-radius:2px;overflow:hidden;margin-top:8px}
+.activation-bar-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--blue-bright));border-radius:2px;animation:loadBar 2.2s ease forwards;box-shadow:0 0 10px var(--cyan)}
+@keyframes loadBar{0%{width:0%}100%{width:100%}}
+.activation-status{font-family:var(--font-ui);font-size:11px;color:var(--cyan);letter-spacing:2px;opacity:0;animation:fadeIn .5s ease .5s forwards}
+@keyframes fadeIn{to{opacity:1}}
+.activation-lines{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.activation-line{position:absolute;background:rgba(0,245,255,.15);animation:scanLine 3s linear infinite}
+.activation-line:nth-child(1){width:100%;height:1px;top:30%;animation-delay:0s}
+.activation-line:nth-child(2){width:1px;height:100%;left:20%;animation-delay:.5s}
+.activation-line:nth-child(3){width:100%;height:1px;top:70%;animation-delay:1s}
+.activation-line:nth-child(4){width:1px;height:100%;left:80%;animation-delay:1.5s}
+@keyframes scanLine{0%{opacity:0;transform:translateX(-100%)}20%{opacity:1}80%{opacity:1}100%{opacity:0;transform:translateX(100%)}}
+
+/* NAV */
+#nav{position:relative;z-index:2;display:flex;gap:0;border-bottom:1px solid var(--panel-border);background:rgba(0,8,20,.95);padding:0 16px;overflow-x:auto}
+.nav-btn{font-family:var(--font-title);font-size:9px;letter-spacing:2px;padding:12px 16px;border:none;background:transparent;color:var(--text-muted);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:all .2s;text-transform:uppercase}
+.nav-btn:hover{color:var(--text-secondary)}
+.nav-btn.active{color:var(--cyan);border-bottom-color:var(--cyan);text-shadow:0 0 10px rgba(0,245,255,.5)}
+
+/* PAGES */
+.page{display:none;position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:16px;animation:fadeInPage .3s ease}
+.page.active{display:block}
+@keyframes fadeInPage{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* HEADER */
+.sys-header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border:1px solid var(--panel-border);border-radius:4px 12px 4px 12px;background:rgba(0,12,30,.9);margin-bottom:16px;position:relative;overflow:hidden}
+.sys-header::before{content:'';position:absolute;top:0;left:0;width:100%;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),var(--blue),transparent);animation:headerGlow 3s ease-in-out infinite}
+@keyframes headerGlow{0%,100%{opacity:.5}50%{opacity:1}}
+.header-title{font-family:var(--font-title);font-size:clamp(12px,2.5vw,18px);font-weight:700;color:var(--cyan);letter-spacing:3px;text-shadow:0 0 15px rgba(0,245,255,.6)}
+.header-right{display:flex;align-items:center;gap:16px}
+.header-clock{font-family:var(--font-title);font-size:13px;color:var(--text-secondary);letter-spacing:1px}
+.header-level-badge{background:rgba(0,245,255,.1);border:1px solid var(--panel-border-bright);border-radius:4px;padding:4px 12px;font-family:var(--font-title);font-size:12px;color:var(--cyan);text-shadow:0 0 8px var(--cyan)}
+
+/* NOTIFICATION */
+.sys-notification{background:rgba(0,20,50,.95);border:1px solid rgba(0,245,255,.4);border-left:3px solid var(--cyan);border-radius:2px 8px 8px 2px;padding:10px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;cursor:pointer}
+.notif-tag{font-family:var(--font-title);font-size:9px;color:var(--cyan);letter-spacing:2px;white-space:nowrap}
+.notif-text{font-family:var(--font-ui);font-size:13px;color:var(--text-primary);letter-spacing:1px}
+.notif-close{margin-left:auto;color:var(--text-muted);cursor:pointer;font-size:16px;line-height:1}
+
+/* GRID */
+.main-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:700px){.main-grid{grid-template-columns:1fr}}
+.main-grid .wide{grid-column:1/-1}
+
+/* PANEL */
+.panel{background:var(--panel);border:1px solid var(--panel-border);border-radius:2px 12px 2px 12px;padding:16px;position:relative;overflow:hidden;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:border-color .3s ease}
+.panel:hover{border-color:rgba(0,245,255,.4)}
+.panel::after{content:'';position:absolute;top:0;right:0;width:30px;height:30px;border-top:1px solid var(--panel-border-bright);border-right:1px solid var(--panel-border-bright);border-radius:0 12px 0 0;pointer-events:none}
+.panel::before{content:'';position:absolute;bottom:0;left:0;width:20px;height:20px;border-bottom:1px solid rgba(0,245,255,.3);border-left:1px solid rgba(0,245,255,.3);pointer-events:none}
+.panel-label{font-family:var(--font-title);font-size:9px;letter-spacing:3px;color:var(--cyan);text-shadow:0 0 8px rgba(0,245,255,.5);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.panel-label::before{content:'';display:inline-block;width:4px;height:4px;background:var(--cyan);border-radius:50%;box-shadow:0 0 6px var(--cyan);animation:dot-pulse 2s ease-in-out infinite}
+@keyframes dot-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
+
+/* RANK BADGE */
+.hunter-rank-badge{display:inline-block;font-family:var(--font-title);font-size:11px;font-weight:700;letter-spacing:3px;padding:4px 14px;border-radius:3px;margin-bottom:6px;border:1px solid;transition:all 0.5s ease}
+.rank-e{color:#aab8c2;border-color:#aab8c2;background:rgba(170,184,194,.08);text-shadow:none}
+.rank-d{color:#7ec8e3;border-color:#7ec8e3;background:rgba(126,200,227,.08)}
+.rank-c{color:#00e5ff;border-color:#00e5ff;background:rgba(0,229,255,.1);text-shadow:0 0 8px rgba(0,229,255,.4)}
+.rank-b{color:#00ff88;border-color:#00ff88;background:rgba(0,255,136,.08);text-shadow:0 0 10px rgba(0,255,136,.4)}
+.rank-a{color:#c084fc;border-color:#c084fc;background:rgba(192,132,252,.1);text-shadow:0 0 12px rgba(192,132,252,.5)}
+.rank-s{color:#fbbf24;border-color:#fbbf24;background:rgba(251,191,36,.1);text-shadow:0 0 14px rgba(251,191,36,.5);animation:sRankPulse 2s ease-in-out infinite}
+.rank-ss{color:#f97316;border-color:#f97316;background:rgba(249,115,22,.12);text-shadow:0 0 16px rgba(249,115,22,.6);animation:sRankPulse 1.5s ease-in-out infinite}
+.rank-national{color:#ef4444;border-color:#ef4444;background:rgba(239,68,68,.1);text-shadow:0 0 20px rgba(239,68,68,.7);animation:nationalPulse 1s ease-in-out infinite}
+.rank-monarch{background:linear-gradient(135deg,rgba(88,28,135,.4),rgba(15,23,42,.6));border-color:rgba(167,139,250,.8);color:#e9d5ff;text-shadow:0 0 20px rgba(167,139,250,.9),0 0 40px rgba(167,139,250,.4);animation:monarchAura 1.5s ease-in-out infinite alternate}
+@keyframes sRankPulse{0%,100%{box-shadow:none}50%{box-shadow:0 0 12px rgba(251,191,36,.3)}}
+@keyframes nationalPulse{0%,100%{box-shadow:0 0 10px rgba(239,68,68,.3)}50%{box-shadow:0 0 25px rgba(239,68,68,.6)}}
+@keyframes monarchAura{0%{box-shadow:0 0 15px rgba(167,139,250,.4),0 0 30px rgba(88,28,135,.3)}100%{box-shadow:0 0 30px rgba(167,139,250,.7),0 0 60px rgba(88,28,135,.5)}}
+.hunter-class{font-family:var(--font-ui);font-size:11px;color:var(--text-muted);letter-spacing:2px;margin-bottom:14px;text-transform:uppercase}
+
+.hunter-name{font-family:var(--font-title);font-size:clamp(18px,4vw,28px);font-weight:900;color:var(--text-primary);letter-spacing:2px;text-shadow:0 0 20px rgba(0,245,255,.3);margin-bottom:4px}
+.level-display{display:flex;align-items:baseline;gap:6px;margin-bottom:8px}
+.level-num{font-family:var(--font-title);font-size:48px;font-weight:900;color:var(--cyan);text-shadow:0 0 20px rgba(0,245,255,.7),0 0 40px rgba(0,245,255,.3);line-height:1}
+.level-label{font-family:var(--font-ui);font-size:12px;color:var(--text-secondary);letter-spacing:2px}
+.xp-info{font-family:var(--font-ui);font-size:13px;color:var(--xp-color);margin-bottom:6px;letter-spacing:1px}
+.xp-bar-wrap{height:6px;background:rgba(0,245,255,.08);border-radius:3px;margin-bottom:14px;overflow:hidden;border:1px solid rgba(0,245,255,.1)}
+.xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:3px;transition:width .8s ease;box-shadow:0 0 8px rgba(0,245,255,.5);position:relative}
+.xp-bar-fill::after{content:'';position:absolute;right:0;top:0;width:4px;height:100%;background:white;opacity:.8;border-radius:2px;animation:barShine 1.5s ease-in-out infinite alternate}
+@keyframes barShine{0%{opacity:.4}100%{opacity:1}}
+.stats-row{display:flex;gap:10px}
+.stat-item{flex:1;text-align:center;background:rgba(0,245,255,.05);border:1px solid rgba(0,245,255,.1);border-radius:6px;padding:8px 4px}
+.stat-val{font-family:var(--font-title);font-size:18px;font-weight:700;color:var(--cyan)}
+.stat-lbl{font-family:var(--font-ui);font-size:10px;color:var(--text-muted);letter-spacing:1px;margin-top:2px}
+
+/* TIMER */
+.timer-display{font-family:var(--font-title);font-size:clamp(32px,7vw,52px);font-weight:700;color:var(--text-primary);letter-spacing:4px;text-align:center;text-shadow:0 0 20px rgba(0,245,255,.3);margin:8px 0}
+.timer-subject{font-family:var(--font-ui);font-size:12px;color:var(--cyan);letter-spacing:3px;text-align:center;margin-bottom:12px}
+.timer-controls{display:flex;gap:8px;margin-bottom:10px}
+.sys-btn{flex:1;font-family:var(--font-title);font-size:10px;letter-spacing:2px;padding:10px 8px;border:1px solid var(--panel-border-bright);background:rgba(0,245,255,.06);color:var(--cyan);border-radius:4px;cursor:pointer;transition:all .2s ease}
+.sys-btn:hover{background:rgba(0,245,255,.14);box-shadow:0 0 12px rgba(0,245,255,.2)}
+.sys-btn:active{transform:scale(.97)}
+.sys-btn.active{background:rgba(0,245,255,.15);border-color:var(--cyan);box-shadow:0 0 16px rgba(0,245,255,.3);color:#fff}
+.sys-btn.danger{border-color:rgba(255,51,102,.5);color:var(--danger);background:rgba(255,51,102,.06)}
+.sys-btn.danger:hover{background:rgba(255,51,102,.14);box-shadow:0 0 12px rgba(255,51,102,.2)}
+.sys-btn.warn-btn{border-color:rgba(255,170,0,.5);color:var(--warn);background:rgba(255,170,0,.06)}
+.sys-btn.warn-btn:hover{background:rgba(255,170,0,.14)}
+.timer-skill-select,.sys-input,.small-input{background:rgba(0,12,30,.8);border:1px solid var(--panel-border);color:var(--text-primary);font-family:var(--font-ui);font-size:12px;padding:8px 10px;border-radius:4px;outline:none;letter-spacing:1px;transition:border-color .2s;width:100%;-webkit-appearance:none}
+.timer-skill-select:focus,.sys-input:focus,.small-input:focus{border-color:var(--cyan)}
+.sys-input::placeholder,.small-input::placeholder{color:var(--text-muted)}
+.small-input{font-size:11px;padding:6px 8px}
+
+/* NF TRACKER */
+.nf-big-num{font-family:var(--font-title);font-size:40px;font-weight:900;color:var(--danger);text-shadow:0 0 20px rgba(255,51,102,.5);text-align:center;margin:4px 0}
+.focus-score-row{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+.focus-score-label{font-family:var(--font-ui);font-size:12px;color:var(--text-secondary);letter-spacing:2px}
+.focus-score-val{font-family:var(--font-title);font-size:22px;font-weight:700;color:var(--success);text-shadow:0 0 12px rgba(0,255,136,.4)}
+.nf-bar-wrap{height:5px;background:rgba(255,255,255,.06);border-radius:3px;margin:8px 0;overflow:hidden}
+.nf-bar-fill{height:100%;background:linear-gradient(90deg,var(--success),var(--cyan));border-radius:3px;transition:width .5s ease}
+
+/* MISSION SUMMARY (home) */
+.mission-title{font-family:var(--font-title);font-size:clamp(14px,3vw,20px);font-weight:900;color:var(--xp-color);text-shadow:0 0 15px rgba(168,85,247,.6),0 0 30px rgba(168,85,247,.3);letter-spacing:2px;margin-bottom:4px}
+.mission-pct{font-family:var(--font-title);font-size:16px;color:var(--xp-color)}
+.mission-bar-wrap{height:8px;background:rgba(168,85,247,.08);border-radius:4px;overflow:hidden;border:1px solid rgba(168,85,247,.2);margin-bottom:10px}
+.mission-bar-fill{height:100%;background:linear-gradient(90deg,#6b21a8,#a855f7,#d8b4fe);border-radius:4px;box-shadow:0 0 12px rgba(168,85,247,.5);transition:width .8s ease}
+.mini-score-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.mini-score{background:rgba(0,245,255,.04);border:1px solid rgba(0,245,255,.1);border-radius:4px;padding:8px 6px;text-align:center}
+.mini-score-val{font-family:var(--font-title);font-size:15px;color:var(--cyan);font-weight:700}
+.mini-score-lbl{font-family:var(--font-ui);font-size:9px;color:var(--text-muted);letter-spacing:1px;margin-top:2px}
+.go-mission-btn{margin-top:12px;width:100%;font-family:var(--font-title);font-size:9px;letter-spacing:3px;padding:10px;border:1px solid rgba(168,85,247,.4);background:rgba(168,85,247,.07);color:var(--xp-color);border-radius:4px;cursor:pointer;transition:all .2s}
+.go-mission-btn:hover{background:rgba(168,85,247,.15);border-color:rgba(168,85,247,.7);box-shadow:0 0 14px rgba(168,85,247,.3)}
+
+/* ATTRIBUTES */
+.attr-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.attr-card{background:rgba(0,12,30,.7);border:1px solid var(--panel-border);border-radius:6px;padding:10px 12px;position:relative;overflow:hidden;transition:border-color .3s}
+.attr-card:hover{border-color:rgba(0,245,255,.4)}
+.attr-card-top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.attr-icon{font-size:16px;line-height:1;flex-shrink:0;width:20px;text-align:center}
+.attr-name{font-family:var(--font-title);font-size:8px;letter-spacing:2px;margin-bottom:1px}
+.attr-points{font-family:var(--font-title);font-size:24px;font-weight:900;line-height:1}
+.attr-label{font-family:var(--font-ui);font-size:9px;color:var(--text-muted);letter-spacing:1px}
+.attr-card-left{flex:1;min-width:0}
+.attr-card-right{display:none}
+.attr-desc-text{font-family:var(--font-ui);font-size:9px;color:var(--text-muted);letter-spacing:.5px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.attr-bar-wrap{height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;margin-top:6px}
+.attr-bar-fill{height:100%;border-radius:2px;transition:width .6s ease}
+.attr-decay{font-family:var(--font-ui);font-size:9px;letter-spacing:1px;margin-top:4px}
+/* Unified cyan theme for all attributes */
+.attr-strength .attr-name,.attr-strength .attr-points,
+.attr-creativity .attr-name,.attr-creativity .attr-points,
+.attr-intelligence .attr-name,.attr-intelligence .attr-points,
+.attr-discipline .attr-name,.attr-discipline .attr-points{color:var(--cyan);text-shadow:0 0 10px rgba(0,245,255,.5)}
+.attr-strength .attr-bar-fill,
+.attr-creativity .attr-bar-fill,
+.attr-intelligence .attr-bar-fill,
+.attr-discipline .attr-bar-fill{background:linear-gradient(90deg,var(--blue),var(--cyan));box-shadow:0 0 6px rgba(0,245,255,.3)}
+.attr-strength,.attr-creativity,.attr-intelligence,.attr-discipline{border-color:rgba(0,245,255,.2)}
+.attr-decay-warn{color:var(--warn)}
+.attr-decay-ok{color:var(--success)}
+.attr-decay-danger{color:var(--danger)}
+/* Weekly quest badge */
+.quest-weekly{font-family:var(--font-title);font-size:8px;color:var(--warn);background:rgba(255,170,0,.1);border:1px solid rgba(255,170,0,.3);border-radius:3px;padding:2px 6px;white-space:nowrap}
+.quest-gym-badge{font-family:var(--font-title);font-size:8px;color:var(--success);background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.3);border-radius:3px;padding:2px 6px;white-space:nowrap}
+.quest-rest-badge{font-family:var(--font-title);font-size:8px;color:var(--text-muted);background:rgba(120,180,220,.06);border:1px solid rgba(120,180,220,.15);border-radius:3px;padding:2px 6px;white-space:nowrap}
+.quest-item.rest-day{opacity:.45;cursor:default}
+.quest-item.rest-day .quest-check{opacity:.3;cursor:default}
+.quest-item.rest-day .quest-text{color:var(--text-muted)}
+
+.skill-item{margin-bottom:12px;position:relative}
+.skill-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.skill-name{font-family:var(--font-ui);font-size:13px;font-weight:600;color:var(--text-primary);letter-spacing:1px;display:flex;align-items:center;gap:8px}
+.skill-lv{font-family:var(--font-title);font-size:9px;color:var(--cyan);background:rgba(0,245,255,.1);border:1px solid rgba(0,245,255,.2);border-radius:3px;padding:2px 6px;letter-spacing:1px}
+.skill-hours{font-family:var(--font-ui);font-size:11px;color:var(--text-muted);letter-spacing:1px}
+.skill-bar-wrap{height:5px;background:rgba(0,245,255,.06);border-radius:3px;overflow:hidden;border:1px solid rgba(0,245,255,.08)}
+.skill-bar-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:3px;transition:width .7s ease}
+.skill-row-controls{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap}
+.skill-timer-btn{font-family:var(--font-title);font-size:8px;letter-spacing:1px;padding:4px 8px;border:1px solid rgba(0,245,255,.2);background:transparent;color:var(--text-secondary);border-radius:3px;cursor:pointer;transition:all .2s}
+.skill-timer-btn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,245,255,.08)}
+.skill-delete-btn{margin-left:auto;font-size:12px;background:transparent;border:none;color:rgba(255,51,102,.4);cursor:pointer;padding:2px 6px;border-radius:3px;transition:color .2s}
+.skill-delete-btn:hover{color:var(--danger)}
+
+/* QUESTS */
+.quest-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid rgba(0,245,255,.1);border-radius:4px;margin-bottom:8px;background:rgba(0,245,255,.03);cursor:pointer;transition:all .2s ease;position:relative;overflow:hidden}
+.quest-item:hover{border-color:rgba(0,245,255,.3);background:rgba(0,245,255,.06)}
+.quest-item.completed{border-color:rgba(0,255,136,.2);background:rgba(0,255,136,.04);opacity:.7}
+.quest-item.negative{border-color:rgba(255,51,102,.15);background:rgba(255,51,102,.04)}
+.quest-item.negative:hover{border-color:rgba(255,51,102,.3);background:rgba(255,51,102,.08)}
+.quest-check{width:18px;height:18px;border:1.5px solid rgba(0,245,255,.4);border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.quest-item.completed .quest-check{background:var(--success);border-color:var(--success)}
+.quest-item.negative .quest-check{border-color:rgba(255,51,102,.5)}
+.quest-check-mark{display:none;font-size:11px;color:#000;font-weight:900}
+.quest-item.completed .quest-check-mark{display:block}
+.quest-text{flex:1;font-family:var(--font-ui);font-size:13px;color:var(--text-primary);letter-spacing:.5px}
+.quest-item.completed .quest-text{text-decoration:line-through;color:var(--text-muted)}
+.quest-xp{font-family:var(--font-title);font-size:10px;color:var(--xp-color);white-space:nowrap}
+.quest-item.negative .quest-xp{color:var(--danger)}
+.quest-delete-btn{background:transparent;border:none;color:rgba(255,51,102,.3);cursor:pointer;font-size:14px;padding:0 4px;transition:color .2s}
+.quest-delete-btn:hover{color:var(--danger)}
+.quest-add-row{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+
+/* HABITS */
+.habit-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid rgba(0,245,255,.1);border-radius:4px;margin-bottom:8px;background:rgba(0,245,255,.03);transition:all .2s}
+.habit-dot{width:10px;height:10px;border-radius:50%;border:1.5px solid rgba(0,245,255,.4);flex-shrink:0;cursor:pointer;transition:all .2s}
+.habit-dot.done{background:var(--success);border-color:var(--success);box-shadow:0 0 6px rgba(0,255,136,.5)}
+.habit-name{flex:1;font-family:var(--font-ui);font-size:13px;color:var(--text-primary);letter-spacing:.5px}
+.habit-streak{font-family:var(--font-title);font-size:11px;color:var(--warn)}
+
+/* ACHIEVEMENTS */
+.achievement-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+.achievement-item{background:rgba(0,245,255,.04);border:1px solid rgba(0,245,255,.1);border-radius:6px;padding:10px 8px;text-align:center;transition:all .3s ease}
+.achievement-item.unlocked{border-color:rgba(168,85,247,.5);background:rgba(168,85,247,.07);box-shadow:0 0 10px rgba(168,85,247,.2)}
+.achievement-icon{font-size:22px;margin-bottom:6px;filter:grayscale(1) opacity(.3)}
+.achievement-item.unlocked .achievement-icon{filter:none}
+.achievement-name{font-family:var(--font-ui);font-size:10px;color:var(--text-muted);letter-spacing:.5px;line-height:1.3}
+.achievement-item.unlocked .achievement-name{color:var(--xp-color)}
+
+/* TIME BLOCKS */
+.time-comparison{display:flex;gap:10px;margin-top:8px}
+.time-block{flex:1;text-align:center;background:rgba(0,245,255,.04);border:1px solid rgba(0,245,255,.1);border-radius:6px;padding:12px 8px}
+.time-block.active-timer{border-color:rgba(0,245,255,.4);background:rgba(0,245,255,.08);box-shadow:0 0 10px rgba(0,245,255,.1)}
+.time-block-label{font-family:var(--font-title);font-size:9px;letter-spacing:2px;color:var(--text-muted);margin-bottom:6px}
+.time-block-val{font-family:var(--font-title);font-size:22px;font-weight:700;color:var(--cyan)}
+.time-block.screen .time-block-val{color:var(--danger)}
+
+/* SECTION DIVIDER */
+.section-title{font-family:var(--font-title);font-size:10px;letter-spacing:4px;color:var(--text-muted);margin:16px 0 10px;display:flex;align-items:center;gap:10px;grid-column:1/-1}
+.section-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(0,245,255,.15),transparent)}
+
+/* COUNTDOWNS */
+.countdown-item{border:1px solid rgba(0,245,255,.1);border-radius:4px;padding:10px 12px;margin-bottom:8px;background:rgba(0,12,30,.5)}
+.countdown-name{font-family:var(--font-ui);font-size:12px;color:var(--text-secondary);letter-spacing:1px;margin-bottom:4px}
+.countdown-time{font-family:var(--font-title);font-size:20px;font-weight:700;color:var(--cyan);text-shadow:0 0 10px rgba(0,245,255,.3);letter-spacing:2px}
+.countdown-sub{font-family:var(--font-ui);font-size:10px;color:var(--text-muted);letter-spacing:1px;margin-top:2px}
+
+/* POPUPS */
+#achievement-popup{position:fixed;top:80px;right:20px;z-index:500;background:rgba(0,10,25,.98);border:1px solid rgba(168,85,247,.6);border-left:3px solid var(--xp-color);border-radius:4px 10px 10px 4px;padding:14px 20px;min-width:240px;transform:translateX(300px);transition:transform .4s cubic-bezier(.175,.885,.32,1.275);box-shadow:0 0 30px rgba(168,85,247,.2)}
+#achievement-popup.show{transform:translateX(0)}
+.popup-tag{font-family:var(--font-title);font-size:8px;color:var(--xp-color);letter-spacing:3px;margin-bottom:4px}
+.popup-name{font-family:var(--font-ui);font-size:15px;font-weight:600;color:var(--text-primary);letter-spacing:1px}
+#levelup-popup{position:fixed;inset:0;z-index:600;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.7)}
+#levelup-popup.show{display:flex}
+.levelup-inner{background:rgba(0,10,30,.98);border:2px solid var(--cyan);border-radius:8px;padding:40px;text-align:center;box-shadow:0 0 60px rgba(0,245,255,.3);animation:levelupAnim .5s ease}
+@keyframes levelupAnim{0%{transform:scale(.5);opacity:0}60%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.levelup-title{font-family:var(--font-title);font-size:13px;letter-spacing:5px;color:var(--cyan);margin-bottom:8px}
+.levelup-num{font-family:var(--font-title);font-size:72px;font-weight:900;color:var(--text-primary);text-shadow:0 0 30px rgba(0,245,255,.7);line-height:1;margin-bottom:8px}
+.levelup-sub{font-family:var(--font-ui);font-size:14px;color:var(--text-secondary);letter-spacing:3px}
+
+/* ADD FORM */
+.add-form-row{margin-top:10px;padding-top:10px;border-top:1px solid rgba(0,245,255,.08)}
+.add-form-label{font-family:var(--font-title);font-size:8px;letter-spacing:2px;color:var(--text-muted);margin-bottom:6px}
+
+/* ============ MISSION PAGE STYLES ============ */
+.mission-page-header{font-family:var(--font-title);font-size:clamp(14px,3vw,22px);font-weight:900;color:var(--xp-color);text-shadow:0 0 20px rgba(168,85,247,.7),0 0 40px rgba(168,85,247,.3);letter-spacing:3px;margin-bottom:4px}
+.mission-page-sub{font-family:var(--font-ui);font-size:11px;color:var(--text-muted);letter-spacing:2px;margin-bottom:16px}
+
+.score-overview{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px}
+.score-card{background:rgba(0,12,30,.8);border:1px solid var(--panel-border);border-radius:6px;padding:14px;text-align:center}
+.score-card-val{font-family:var(--font-title);font-size:28px;font-weight:900;color:var(--cyan);text-shadow:0 0 15px rgba(0,245,255,.4)}
+.score-card-max{font-family:var(--font-ui);font-size:11px;color:var(--text-muted);letter-spacing:1px}
+.score-card-label{font-family:var(--font-title);font-size:9px;letter-spacing:2px;color:var(--text-secondary);margin-top:4px}
+.score-card.gold .score-card-val{color:var(--xp-color);text-shadow:0 0 15px rgba(168,85,247,.6)}
+.score-card.warn .score-card-val{color:var(--warn)}
+
+.cv-pct-bar{height:10px;background:rgba(0,245,255,.06);border-radius:5px;overflow:hidden;border:1px solid rgba(0,245,255,.1);margin:8px 0 4px}
+.cv-pct-fill{height:100%;background:linear-gradient(90deg,#6b21a8,#a855f7);border-radius:5px;transition:width .8s ease;box-shadow:0 0 10px rgba(168,85,247,.5)}
+.cv-pct-text{font-family:var(--font-ui);font-size:11px;color:var(--text-secondary);letter-spacing:1px}
+
+/* SECTION BLOCKS */
+.mission-section{background:rgba(0,12,30,.7);border:1px solid var(--panel-border);border-radius:4px 10px 4px 10px;padding:16px;margin-bottom:14px}
+.mission-section-title{font-family:var(--font-title);font-size:10px;letter-spacing:3px;color:var(--cyan);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.mission-section-score{font-family:var(--font-title);font-size:14px;color:var(--xp-color)}
+
+/* ENTRY ITEMS */
+.entry-list{margin-bottom:8px}
+.entry-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid rgba(0,245,255,.08);border-radius:4px;margin-bottom:6px;background:rgba(0,245,255,.03);transition:all .2s}
+.entry-item:hover{border-color:rgba(0,245,255,.2)}
+.entry-check{width:16px;height:16px;border:1.5px solid rgba(0,245,255,.3);border-radius:3px;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:all .2s}
+.entry-item.checked .entry-check{background:var(--success);border-color:var(--success)}
+.entry-check-mark{display:none;font-size:10px;color:#000;font-weight:900}
+.entry-item.checked .entry-check-mark{display:block}
+.entry-text{flex:1;font-family:var(--font-ui);font-size:12px;color:var(--text-secondary);letter-spacing:.5px}
+.entry-item.checked .entry-text{color:var(--text-muted);text-decoration:line-through}
+.entry-points{font-family:var(--font-title);font-size:11px;color:var(--cyan);white-space:nowrap}
+.entry-delete{background:transparent;border:none;color:rgba(255,51,102,.3);cursor:pointer;font-size:13px;padding:0 4px;transition:color .2s}
+.entry-delete:hover{color:var(--danger)}
+
+/* ADD ENTRY ROW */
+.entry-add-row{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.entry-add-row .sys-input{min-width:0}
+
+/* ELIGIBILITY */
+.elig-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid rgba(0,245,255,.08);border-radius:4px;margin-bottom:6px}
+.elig-dot{width:10px;height:10px;border-radius:50%;border:1.5px solid rgba(0,245,255,.3);cursor:pointer;flex-shrink:0;transition:all .2s}
+.elig-dot.done{background:var(--success);border-color:var(--success);box-shadow:0 0 6px rgba(0,255,136,.4)}
+.elig-dot.na{background:rgba(255,170,0,.6);border-color:var(--warn)}
+.elig-text{flex:1;font-family:var(--font-ui);font-size:12px;color:var(--text-secondary);letter-spacing:.5px}
+.elig-status{font-family:var(--font-title);font-size:9px;letter-spacing:1px}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:rgba(0,245,255,.03)}
+::-webkit-scrollbar-thumb{background:rgba(0,245,255,.2);border-radius:2px}
+
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.panel{animation:fadeInUp .5s ease forwards}
+.panel:nth-child(1){animation-delay:.1s;opacity:0}
+.panel:nth-child(2){animation-delay:.15s;opacity:0}
+.panel:nth-child(3){animation-delay:.2s;opacity:0}
+.panel:nth-child(4){animation-delay:.25s;opacity:0}
+.panel:nth-child(5){animation-delay:.3s;opacity:0}
+.panel:nth-child(6){animation-delay:.35s;opacity:0}
+.panel:nth-child(7){animation-delay:.4s;opacity:0}
+.panel:nth-child(8){animation-delay:.45s;opacity:0}
+.panel:nth-child(9){animation-delay:.5s;opacity:0}
+</style>
+</head>
+<body>
+
+<!-- ACTIVATION -->
+<div id="activation-screen">
+  <div class="activation-lines">
+    <div class="activation-line"></div><div class="activation-line"></div>
+    <div class="activation-line"></div><div class="activation-line"></div>
+  </div>
+  <div class="activation-logo">SYSTEM</div>
+  <div class="activation-sub">Hunter Interface v2.0</div>
+  <div class="activation-bar-wrap"><div class="activation-bar-fill"></div></div>
+  <div class="activation-status">ACTIVATING SYSTEM...</div>
+</div>
+
+<!-- POPUPS -->
+<div id="achievement-popup">
+  <div class="popup-tag">⚡ ACHIEVEMENT UNLOCKED</div>
+  <div class="popup-name" id="achievement-popup-name">First Study Session</div>
+</div>
+<div id="levelup-popup">
+  <div class="levelup-inner">
+    <div class="levelup-title">LEVEL UP</div>
+    <div class="levelup-num" id="levelup-num">2</div>
+    <div class="levelup-sub">RANK ASCENDING</div>
+    <button class="sys-btn" style="margin-top:24px" onclick="closeLevelup()">ACKNOWLEDGE</button>
+  </div>
+</div>
+
+<!-- NAV -->
+<div id="nav">
+  <button class="nav-btn active" onclick="showPage('home')">// HOME</button>
+  <button class="nav-btn" onclick="showPage('mission')">// MISSION</button>
+  <button class="nav-btn" onclick="showPage('skills')">// SKILLS</button>
+  <button class="nav-btn" onclick="showPage('log')">// XP LOG</button>
+</div>
+
+<!-- ===== HOME PAGE ===== -->
+<div class="page active" id="page-home">
+  <div class="sys-header">
+    <div class="header-title">// SYSTEM INTERFACE //</div>
+    <div class="header-right">
+      <div class="header-clock" id="header-clock">00:00:00</div>
+      <div class="header-level-badge" id="header-badge">LV.1</div>
+    </div>
+  </div>
+  <div class="sys-notification" id="sys-notif">
+    <div class="notif-tag">⚡ SYSTEM</div>
+    <div class="notif-text" id="notif-text">System online. New quests assigned. Begin your ascension.</div>
+    <div class="notif-close" onclick="dismissNotif()">×</div>
+  </div>
+
+  <div class="main-grid">
+    <!-- HUNTER STATUS -->
+    <div class="panel">
+      <div class="panel-label">HUNTER STATUS</div>
+      <div class="hunter-name" id="hunter-name-display">HUNTER</div>
+      <div id="hunter-rank-badge" class="hunter-rank-badge">E-RANK</div>
+      <div class="hunter-class" id="hunter-class-sub" style="display:none"></div>
+      <div class="level-display">
+        <div class="level-num" id="level-display">1</div>
+        <div class="level-label">LEVEL</div>
+      </div>
+      <div class="xp-info" id="xp-display">XP: 0 / 40</div>
+      <div class="xp-bar-wrap"><div class="xp-bar-fill" id="xp-bar" style="width:0%"></div></div>
+      <div class="stats-row">
+        <div class="stat-item"><div class="stat-val" id="stat-study">0h</div><div class="stat-lbl">STUDY</div></div>
+        <div class="stat-item"><div class="stat-val" id="stat-streak">0</div><div class="stat-lbl">STREAK</div></div>
+        <div class="stat-item"><div class="stat-val" id="stat-quests">0</div><div class="stat-lbl">QUESTS</div></div>
+        <div class="stat-item"><div class="stat-val" id="stat-focus">—</div><div class="stat-lbl">FOCUS</div></div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:6px">
+        <input class="sys-input" id="name-input" placeholder="SET HUNTER NAME" style="font-size:11px;padding:6px 10px">
+        <button class="sys-btn" style="flex:0;white-space:nowrap;font-size:9px" onclick="setName()">SET</button>
+      </div>
+    </div>
+
+    <!-- ATTRIBUTES -->
+    <div class="panel wide">
+      <div class="panel-label">ATTRIBUTES — HABIT-LINKED PROGRESSION</div>
+      <div class="attr-grid" id="attr-grid"></div>
+    </div>
+
+    <!-- TIMER -->
+    <div class="panel">
+      <div class="panel-label">TIMER</div>
+      <div class="timer-display" id="timer-display">00:00:00</div>
+      <div class="timer-subject" id="timer-subject-label">SELECT SKILL BELOW</div>
+      <select class="timer-skill-select" id="timer-skill-select" onchange="updateTimerSubject()"></select>
+      <div class="timer-controls" style="margin-top:8px">
+        <button class="sys-btn" id="btn-start" onclick="startTimer()">▶ START</button>
+        <button class="sys-btn danger" id="btn-stop" onclick="stopTimer()">■ STOP</button>
+        <button class="sys-btn" id="btn-reset" onclick="resetTimer()">↺ RESET</button>
+      </div>
+      <div id="timer-confirm" style="display:none;margin-top:10px;background:rgba(0,245,255,.06);border:1px solid rgba(0,245,255,.3);border-radius:6px;padding:12px">
+        <div style="font-family:var(--font-title);font-size:9px;letter-spacing:2px;color:var(--cyan);margin-bottom:8px">SESSION COMPLETE — LOG THIS?</div>
+        <div id="timer-confirm-summary" style="font-family:var(--font-ui);font-size:12px;color:var(--text-secondary);margin-bottom:10px;line-height:1.6"></div>
+        <div style="display:flex;gap:8px">
+          <button class="sys-btn" style="font-size:9px" onclick="confirmSession()">✓ CONFIRM</button>
+          <button class="sys-btn danger" style="font-size:9px;flex:0;padding:10px 14px" onclick="discardSession()">✕ DISCARD</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- NF TRACKER -->
+    <div class="panel">
+      <div class="panel-label">NF TRACKER — DISCIPLINE MONITOR</div>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-family:var(--font-ui);font-size:11px;color:var(--text-muted);letter-spacing:2px;margin-bottom:2px">NF COUNT TODAY</div>
+          <div class="nf-big-num" id="nf-count">0</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:var(--font-ui);font-size:11px;color:var(--text-muted);letter-spacing:2px;margin-bottom:2px">NF TIME</div>
+          <div style="font-family:var(--font-title);font-size:22px;font-weight:700;color:var(--danger)" id="nf-time-display">0m</div>
+        </div>
+      </div>
+      <div class="focus-score-row">
+        <div class="focus-score-label">FOCUS SCORE</div>
+        <div class="focus-score-val" id="focus-score">100%</div>
+      </div>
+      <div class="nf-bar-wrap"><div class="nf-bar-fill" id="nf-bar" style="width:100%"></div></div>
+      <div style="font-family:var(--font-ui);font-size:11px;color:var(--text-muted);text-align:center;margin-top:4px;letter-spacing:1px" id="nf-streak-text">Clean today — maintain discipline</div>
+      <div style="display:flex;gap:6px;margin-top:10px;align-items:flex-end">
+        <div style="flex:1">
+          <div style="font-family:var(--font-title);font-size:8px;letter-spacing:1px;color:var(--text-muted);margin-bottom:4px">DURATION (MIN)</div>
+          <input class="sys-input" id="nf-min-input" type="number" placeholder="e.g. 15" min="1" style="font-size:11px;padding:6px 8px">
+        </div>
+        <button class="sys-btn danger" onclick="addNF()" style="flex:0;white-space:nowrap;font-size:9px;padding:10px 14px">⚠ LOG NF</button>
+      </div>
+    </div>
+
+    <!-- SCREEN TIME -->
+    <div class="panel">
+      <div class="panel-label">SCREEN TIME VS WORK</div>
+      <div class="time-comparison">
+        <div class="time-block" id="work-block">
+          <div class="time-block-label">WORK</div>
+          <div class="time-block-val" id="work-time-display">0:00</div>
+        </div>
+        <div class="time-block screen" id="screen-block">
+          <div class="time-block-label">SCREEN</div>
+          <div class="time-block-val" id="screen-time-display">0:00</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:10px">
+        <button class="sys-btn" id="work-timer-btn" onclick="toggleWorkTimer()" style="font-size:9px">▶ START WORK</button>
+        <button class="sys-btn danger" id="screen-timer-btn" onclick="toggleScreenTimer()" style="font-size:9px">▶ START SCREEN</button>
+      </div>
+      <div style="margin-top:10px;font-family:var(--font-ui);font-size:11px;color:var(--text-muted);letter-spacing:1px;text-align:center" id="productivity-ratio">Productivity ratio: —</div>
+    </div>
+
+    <div class="section-title">CORE MISSION</div>
+
+    <!-- MISSION SUMMARY -->
+    <div class="panel wide">
+      <div class="panel-label">CORE MISSION — HEAD & NECK SURGEON</div>
+      <div class="mission-title">HEAD & NECK SURGEON</div>
+      <div style="font-family:var(--font-ui);font-size:11px;color:var(--text-muted);letter-spacing:2px;margin-bottom:10px">RACS ENT SET PROGRAM — SELECTION TARGET</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-family:var(--font-ui);font-size:12px;color:var(--text-muted);letter-spacing:1px">CV SCORE PROGRESS</span>
+        <span class="mission-pct" id="mission-cv-pct-home">0 / 18 pts</span>
+      </div>
+      <div class="cv-pct-bar"><div class="cv-pct-fill" id="mission-cv-bar-home" style="width:0%"></div></div>
+      <div style="font-family:var(--font-ui);font-size:11px;color:var(--text-muted);letter-spacing:1px;margin-bottom:12px" id="mission-cv-status-home">Below 50% threshold</div>
+      <div class="mini-score-grid">
+        <div class="mini-score"><div class="mini-score-val" id="home-pub-score">0</div><div class="mini-score-lbl">PUBLICATIONS</div></div>
+        <div class="mini-score"><div class="mini-score-val" id="home-pres-score">0</div><div class="mini-score-lbl">PRESENTATIONS</div></div>
+        <div class="mini-score"><div class="mini-score-val" id="home-qual-score">0</div><div class="mini-score-lbl">QUALIFICATIONS</div></div>
+        <div class="mini-score"><div class="mini-score-val" id="home-elig-done">0/12</div><div class="mini-score-lbl">ELIGIBILITY</div></div>
+      </div>
+      <button class="go-mission-btn" onclick="showPage('mission')">⚡ VIEW FULL MISSION DASHBOARD →</button>
+    </div>
+
+    <div class="section-title">DAILY OPERATIONS</div>
+
+    <!-- DAILY QUESTS -->
+    <div class="panel">
+      <div class="panel-label">DAILY QUESTS</div>
+      <div id="quests-list"></div>
+      <div class="quest-add-row">
+        <input class="sys-input" id="new-quest-text" placeholder="New quest" style="flex:3;min-width:0">
+        <input class="sys-input" id="new-quest-xp" type="number" placeholder="XP" min="10" style="width:60px">
+        <button class="sys-btn" style="flex:0;font-size:9px;white-space:nowrap;padding:8px 10px" onclick="addQuest()">+</button>
+      </div>
+    </div>
+
+    <!-- HABITS -->
+    <div class="panel">
+      <div class="panel-label">HABITS — DAILY CHECK-IN</div>
+      <div id="habits-list"></div>
+    </div>
+
+    <div class="section-title">ACHIEVEMENTS</div>
+
+    <div class="panel wide">
+      <div class="panel-label">ACHIEVEMENTS</div>
+      <div class="achievement-grid" id="achievements-grid"></div>
+    </div>
+
+    <!-- COUNTDOWNS -->
+    <div class="panel">
+      <div class="panel-label">MILESTONE COUNTDOWNS</div>
+      <div id="countdowns-list"></div>
+      <div class="add-form-row">
+        <div class="add-form-label">ADD COUNTDOWN</div>
+        <input class="small-input" id="cd-name" placeholder="Event name" style="margin-bottom:6px">
+        <input class="small-input" id="cd-date" type="date" style="margin-bottom:6px">
+        <button class="sys-btn" style="font-size:9px;width:100%" onclick="addCountdown()">+ ADD COUNTDOWN</button>
+      </div>
+    </div>
+
+    <!-- XP LOG MINI -->
+    <div class="panel">
+      <div class="panel-label">RECENT XP</div>
+      <div id="xp-log-mini" style="font-family:var(--font-ui);font-size:12px;color:var(--text-secondary);max-height:200px;overflow-y:auto"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MISSION PAGE ===== -->
+<div class="page" id="page-mission">
+  <div class="sys-header">
+    <div class="header-title">// MISSION CONTROL //</div>
+    <div class="header-right">
+      <div class="header-clock" id="mission-clock">00:00:00</div>
+      <div class="header-level-badge" id="mission-badge">LV.1</div>
+    </div>
+  </div>
+
+  <div class="mission-page-header">HEAD & NECK SURGEON</div>
+  <div class="mission-page-sub">RACS ENT / OHNS SET SELECTION PROGRAM — TRACKING DASHBOARD</div>
+
+  <!-- SCORE OVERVIEW -->
+  <div class="score-overview" id="mission-score-overview">
+    <div class="score-card gold"><div class="score-card-val" id="m-cv-score">0</div><div class="score-card-max">/ 18 pts</div><div class="score-card-label">CV TOTAL</div></div>
+    <div class="score-card"><div class="score-card-val" id="m-pub-score">0</div><div class="score-card-max">/ 4 pts</div><div class="score-card-label">PUBLICATIONS</div></div>
+    <div class="score-card"><div class="score-card-val" id="m-pres-score">0</div><div class="score-card-max">/ 2 pts</div><div class="score-card-label">PRESENTATIONS</div></div>
+    <div class="score-card"><div class="score-card-val" id="m-qual-score">0</div><div class="score-card-max">/ 5 pts</div><div class="score-card-label">QUALIFICATIONS</div></div>
+    <div class="score-card warn"><div class="score-card-val" id="m-cv-pct">0%</div><div class="score-card-max">min 50%</div><div class="score-card-label">CV %</div></div>
+  </div>
+  <div class="cv-pct-bar" style="margin-bottom:16px"><div class="cv-pct-fill" id="m-cv-bar" style="width:0%"></div></div>
+
+  <!-- ELIGIBILITY -->
+  <div class="mission-section">
+    <div class="mission-section-title">
+      <span>ELIGIBILITY CHECKLIST</span>
+      <span class="mission-section-score" id="elig-score-label">0 / 12</span>
+    </div>
+    <div style="font-family:var(--font-title);font-size:8px;letter-spacing:2px;color:var(--text-muted);margin-bottom:8px">RACS GENERIC</div>
+    <div class="elig-item" id="elig-residency"><div class="elig-dot done" onclick="toggleElig('residency')"></div><div class="elig-text">Australian residency or citizenship</div><div class="elig-status" style="color:var(--success)">✓</div></div>
+    <div class="elig-item" id="elig-registration"><div class="elig-dot done" onclick="toggleElig('registration')"></div><div class="elig-text">General (unconditional) registration with Medical Board of Australia</div><div class="elig-status" style="color:var(--success)">✓</div></div>
+    <div class="elig-item" id="elig-iwr"><div class="elig-dot" onclick="toggleElig('iwr')"></div><div class="elig-text">Completion of RACS 'Introduction to Operating with Respect' Module</div><div class="elig-status" style="color:var(--text-muted)">—</div></div>
+    <div style="font-family:var(--font-title);font-size:8px;letter-spacing:2px;color:var(--text-muted);margin:10px 0 8px">OHNS SPECIFIC</div>
+    <div class="elig-item" id="elig-gsse"><div class="elig-dot done" onclick="toggleElig('gsse')"></div><div class="elig-text">Passed General Surgical Sciences Examination (GSSE)</div><div class="elig-status" style="color:var(--success)">✓</div></div>
+    <div class="elig-item" id="elig-eligform"><div class="elig-dot" onclick="toggleElig('eligform')"></div><div class="elig-text">OHNS Selection eligibility form completed by supervising OHNS Consultant</div><div class="elig-status" style="color:var(--text-muted)">—</div></div>
+    <div class="elig-item" id="elig-ohns10"><div class="elig-dot done" onclick="toggleElig('ohns10')"></div><div class="elig-text">Minimum 10 consecutive weeks in an OHNS unit (within 3 years prior)</div><div class="elig-status" style="color:var(--success)">✓</div></div>
+    <div class="elig-item" id="elig-surg20"><div class="elig-dot done" onclick="toggleElig('surg20')"></div><div class="elig-text">Additional 20 weeks of surgical experience</div><div class="elig-status" style="color:var(--success)">✓</div></div>
+    <div class="elig-item" id="elig-ed8"><div class="elig-dot done" onclick="toggleElig('ed8')"></div><div class="elig-text">8 weeks Emergency Department experience</div><div class="elig-status" style="color:var(--success)">✓</div></div>
+    <div class="elig-item" id="elig-icu8"><div class="elig-dot done" onclick="toggleElig('icu8')"></div><div class="elig-text">8 weeks dedicated ICU experience</div><div class="elig-status" style="color:var(--success)">✓</div></div>
+    <div style="font-family:var(--font-title);font-size:8px;letter-spacing:2px;color:var(--text-muted);margin:10px 0 8px">APPLICATION</div>
+    <div class="elig-item" id="elig-onlinereg"><div class="elig-dot done" onclick="toggleElig('onlinereg')"></div><div class="elig-text">Online registration with RACS</div><div class="elig-status" style="color:var(--success)">✓</div></div>
+    <div class="elig-item" id="elig-appdocs"><div class="elig-dot" onclick="toggleElig('appdocs')"></div><div class="elig-text">Submission of online application with required documentation</div><div class="elig-status" style="color:var(--text-muted)">—</div></div>
+    <div class="elig-item" id="elig-referees"><div class="elig-dot" onclick="toggleElig('referees')"></div><div class="elig-text">Minimum 15 referees confirmed (Clerical, Nurses, Allied Health, ED/ICU, Juniors)</div><div class="elig-status" style="color:var(--text-muted)">—</div></div>
+  </div>
+
+  <!-- PUBLICATIONS -->
+  <div class="mission-section">
+    <div class="mission-section-title">
+      <span>PUBLICATIONS <span style="color:var(--text-muted);font-size:8px">(MAX 4 PTS — PAST 5 YEARS)</span></span>
+      <span class="mission-section-score" id="pub-score-label">0 / 4 pts</span>
+    </div>
+    <div style="font-family:var(--font-ui);font-size:11px;color:var(--text-muted);letter-spacing:1px;margin-bottom:10px">Must be published in peer reviewed journal indexed on Medline or Aust. J. Otolaryngology. Case reports not scored.</div>
+    <div class="entry-list" id="pub-list"></div>
+    <div class="entry-add-row">
+      <input class="sys-input" id="pub-title" placeholder="Publication title" style="flex:3;min-width:100px">
+      <select class="sys-input" id="pub-type" style="flex:1;min-width:120px">
+        <option value="2">1st Author Article (2pts)</option>
+        <option value="0.5">2nd+ Author Article (0.5pts)</option>
+        <option value="1">Book Chapter 1st Author (1pt)</option>
+      </select>
+      <input class="sys-input" id="pub-year" type="number" placeholder="Year" min="2020" max="2030" style="width:70px">
+      <button class="sys-btn" style="flex:0;white-space:nowrap;font-size:9px;padding:8px 12px" onclick="addPublication()">+ ADD</button>
+    </div>
+  </div>
+
+  <!-- PRESENTATIONS -->
+  <div class="mission-section">
+    <div class="mission-section-title">
+      <span>PRESENTATIONS <span style="color:var(--text-muted);font-size:8px">(MAX 2 PTS — PAST 5 YEARS, FIRST AUTHOR)</span></span>
+      <span class="mission-section-score" id="pres-score-label">0 / 2 pts</span>
+    </div>
+    <div class="entry-list" id="pres-list"></div>
+    <div class="entry-add-row">
+      <input class="sys-input" id="pres-title" placeholder="Presentation title" style="flex:3;min-width:100px">
+      <select class="sys-input" id="pres-type" style="flex:1;min-width:130px">
+        <option value="0.25">Poster at OHNS conf (0.25pts)</option>
+        <option value="0.5">Oral at regional OHNS (0.5pts)</option>
+        <option value="1">Oral at national/international (1pt)</option>
+      </select>
+      <input class="sys-input" id="pres-year" type="number" placeholder="Year" min="2020" max="2030" style="width:70px">
+      <button class="sys-btn" style="flex:0;white-space:nowrap;font-size:9px;padding:8px 12px" onclick="addPresentation()">+ ADD</button>
+    </div>
+  </div>
+
+  <!-- QUALIFICATIONS -->
+  <div class="mission-section">
+    <div class="mission-section-title">
+      <span>QUALIFICATIONS <span style="color:var(--text-muted);font-size:8px">(MAX 5 PTS)</span></span>
+      <span class="mission-section-score" id="qual-score-label">0 / 5 pts</span>
+    </div>
+    <div class="entry-list" id="qual-list">
+      <!-- Pre-populated with existing -->
+    </div>
+    <div class="entry-add-row">
+      <input class="sys-input" id="qual-name" placeholder="Qualification name" style="flex:3;min-width:100px">
+      <select class="sys-input" id="qual-type" style="flex:1;min-width:140px">
+        <option value="0.5">Masters by coursework (0.5pts)</option>
+        <option value="1">Masters by research (1pt)</option>
+        <option value="2">PhD (2pts)</option>
+        <option value="2">Current SET trainee (2pts)</option>
+        <option value="1">General dental practitioner (1pt)</option>
+        <option value="5">FRACS (5pts)</option>
+      </select>
+      <button class="sys-btn" style="flex:0;white-space:nowrap;font-size:9px;padding:8px 12px" onclick="addQualification()">+ ADD</button>
+    </div>
+  </div>
+
+  <!-- SURGICAL EXPERIENCE (CV SCORE) -->
+  <div class="mission-section">
+    <div class="mission-section-title">
+      <span>SURGICAL EXPERIENCE <span style="color:var(--text-muted);font-size:8px">(MAX 6 PTS)</span></span>
+      <span class="mission-section-score" id="surg-score-label">0 / 6 pts</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div>
+        <div style="font-family:var(--font-ui);font-size:11px;color:var(--text-muted);letter-spacing:1px;margin-bottom:6px">OHNS ROTATIONS (10-wk blocks) — 2pts each, max 4</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <input class="sys-input" id="ohns-rotations" type="number" min="0" max="2" value="2" style="width:70px" oninput="updateSurgScore()">
+          <span style="font-family:var(--font-ui);font-size:12px;color:var(--text-secondary)">× 2pts = <span id="ohns-rot-pts" style="color:var(--cyan)">4pts</span></span>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:var(--font-ui);font-size:11px;color:var(--text-muted);letter-spacing:1px;margin-bottom:6px">OTHER SURGICAL ROTATIONS (10-wk) — 1pt each, max 2</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <input class="sys-input" id="other-rotations" type="number" min="0" max="2" value="2" style="width:70px" oninput="updateSurgScore()">
+          <span style="font-family:var(--font-ui);font-size:12px;color:var(--text-secondary)">× 1pt = <span id="other-rot-pts" style="color:var(--cyan)">2pts</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RURAL ORIGIN -->
+  <div class="mission-section">
+    <div class="mission-section-title"><span>RURAL ORIGIN</span><span class="mission-section-score" id="rural-origin-score">0 / 1 pt</span></div>
+    <div style="font-family:var(--font-ui);font-size:11px;color:var(--text-muted);letter-spacing:1px;margin-bottom:10px">10 years cumulatively, or at least 5 years consecutively from age 5, in an Australian Statistical Geography Standard – Remoteness Areas (ASGS-RA) 2 to 5.</div>
+    <div class="elig-item" id="elig-rural-origin">
+      <div class="elig-dot" onclick="toggleElig('rural-origin')"></div>
+      <div class="elig-text">Meets rural origin criteria (ASGS-RA 2–5)</div>
+      <div class="elig-status" style="color:var(--text-muted)">—</div>
+    </div>
+  </div>
+
+
+</div>
+
+<!-- ===== SKILLS PAGE ===== -->
+<div class="page" id="page-skills">
+  <div class="sys-header">
+    <div class="header-title">// SKILL MASTERY //</div>
+    <div class="header-right">
+      <div class="header-clock" id="skills-clock">00:00:00</div>
+      <div class="header-level-badge" id="skills-badge">LV.1</div>
+    </div>
+  </div>
+  <div class="main-grid">
+    <div class="panel wide">
+      <div class="panel-label">SKILLS — 10,000 HOUR MASTERY SYSTEM</div>
+      <div id="skills-list"></div>
+      <div style="display:flex;gap:6px;margin-top:14px;flex-wrap:wrap">
+        <input class="sys-input" id="new-skill-name" placeholder="New skill name" style="flex:2;min-width:100px">
+        <input class="sys-input" id="new-skill-target" type="number" placeholder="Target hrs" style="width:100px">
+        <button class="sys-btn" style="flex:0;white-space:nowrap;font-size:9px" onclick="addSkill()">+ ADD SKILL</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== XP LOG PAGE ===== -->
+<div class="page" id="page-log">
+  <div class="sys-header">
+    <div class="header-title">// XP LOG //</div>
+    <div class="header-right">
+      <div class="header-clock" id="log-clock">00:00:00</div>
+    </div>
+  </div>
+
+  <!-- BACKUP PANEL -->
+  <div class="panel" style="animation:none;opacity:1;margin-bottom:14px">
+    <div class="panel-label">DATA BACKUP & RESTORE</div>
+    <div style="font-family:var(--font-ui);font-size:12px;color:var(--text-secondary);margin-bottom:12px;letter-spacing:.5px;line-height:1.6">
+      Your progress is saved in <strong style="color:var(--cyan)">IndexedDB</strong> — this survives "Clear History &amp; Website Data" in Safari.<br>
+      <span style="color:var(--text-muted)">localStorage mirrors it as a second layer. Export a backup periodically as insurance.</span>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="sys-btn" onclick="exportBackup()" style="font-size:9px;letter-spacing:2px">⬇ EXPORT BACKUP</button>
+      <button class="sys-btn warn-btn" onclick="importBackup()" style="font-size:9px;letter-spacing:2px">⬆ RESTORE BACKUP</button>
+    </div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(0,245,255,.08)">
+      <div style="font-family:var(--font-title);font-size:8px;letter-spacing:2px;color:var(--text-muted);margin-bottom:6px">STORAGE STATUS</div>
+      <div id="storage-status" style="font-family:var(--font-ui);font-size:11px;color:var(--text-muted);letter-spacing:.5px"></div>
+    </div>
+  </div>
+
+  <div class="panel" style="animation:none;opacity:1">
+    <div class="panel-label">EXPERIENCE LOG</div>
+    <div id="xp-log-full" style="font-family:var(--font-ui);font-size:13px;color:var(--text-secondary)"></div>
+  </div>
+</div>
+
+<script>
+// ======================================================
+// STATE
+// ======================================================
+let state = {
+  name:'HUNTER',xp:0,level:1,questsCompleted:0,studyHoursTotal:0,streak:0,lastActive:null,
+  workTimeSec:0,screenTimeSec:0,nfCount:0,nfTimeSec:0,
+  skills:[
+    {id:'gym',name:'GYM',hours:0,target:10000,timerSec:0},
+    {id:'research',name:'RESEARCH',hours:0,target:10000,timerSec:0},
+    {id:'study',name:'STUDY',hours:0,target:10000,timerSec:0},
+    {id:'guitar',name:'GUITAR',hours:0,target:10000,timerSec:0},
+    {id:'piano',name:'PIANO',hours:0,target:10000,timerSec:0},
+    {id:'language',name:'LANGUAGE',hours:0,target:10000,timerSec:0},
+    {id:'sport',name:'SPORT',hours:0,target:10000,timerSec:0},
+  ],
+  quests:[
+    {id:1,text:'Study for 1 hour',xp:100,completed:false,negative:false,type:'study'},
+    {id:2,text:'Research for 1 hour',xp:120,completed:false,negative:false,type:'research'},
+    {id:3,text:'Guitar practice — 10 min',xp:40,completed:false,negative:false,type:'guitar'},
+    {id:4,text:'Piano practice — 10 min',xp:40,completed:false,negative:false,type:'piano'},
+    {id:5,text:'Language learning — 10 min',xp:40,completed:false,negative:false,type:'language'},
+    {id:6,text:'Sport session — 30 min (×2/week)',xp:70,completed:false,negative:false,type:'sport',weekly:true,weeklyTarget:2},
+    {id:7,text:'Gym session — every other day',xp:90,completed:false,negative:false,type:'gym',alternateDay:true,active:true},
+  ],
+  habits:[
+    {id:'gym-h',name:'Gym session',done:false,streak:0},
+    {id:'sleep-h',name:'Sleep 6+ hours',done:false,streak:0},
+    {id:'research-h',name:'Research task',done:false,streak:0},
+    {id:'guitar-h',name:'Guitar practice',done:false,streak:0},
+    {id:'piano-h',name:'Piano practice',done:false,streak:0},
+    {id:'lang-h',name:'Language learning',done:false,streak:0},
+    {id:'sport-h',name:'Sport session',done:false,streak:0},
+  ],
+  achievements:[
+    {id:'first-study',name:'First Study',desc:'Complete first study session',icon:'📚',unlocked:false},
+    {id:'scholar-10',name:'10h Scholar',desc:'10 study hours',icon:'🎓',unlocked:false},
+    {id:'focus-master',name:'Focus Master',desc:'90% focus score',icon:'🧠',unlocked:false},
+    {id:'nf-control',name:'NF Control',desc:'Clean NF day',icon:'⚔️',unlocked:false},
+    {id:'consistency',name:'Consistency',desc:'7 day streak',icon:'🔥',unlocked:false},
+    {id:'level-5',name:'Level 5',desc:'Reach Level 5',icon:'⭐',unlocked:false},
+    {id:'level-10',name:'Level 10',desc:'Reach Level 10',icon:'💎',unlocked:false},
+    {id:'surgeon-path',name:'Surgeon Path',desc:'First research hour',icon:'🏥',unlocked:false},
+    {id:'skill-100',name:'Skill 100h',desc:'100h in any skill',icon:'🎯',unlocked:false},
+    {id:'first-pub',name:'First Paper',desc:'Add first publication',icon:'📄',unlocked:false},
+    {id:'first-pres',name:'First Pres',desc:'Add first presentation',icon:'🎤',unlocked:false},
+  ],
+  // Mission data
+  eligibility:{residency:true,registration:true,iwr:false,gsse:true,eligform:false,ohns10:true,surg20:true,ed8:true,icu8:true,onlinereg:true,appdocs:false,referees:false,'rural-origin':false},
+  courses:{asset:false,ccrisp:false,emst:false,tips:false,sjt:false},
+  publications:[],
+  presentations:[{id:'p1',title:'Oral presentation at national/international medical conference',type:'1',points:1,year:2024}],
+  qualifications:[{id:'q1',title:'Masters by coursework (Medicine)',points:0.5,year:2022}],
+  surgRotations:{ohns:2,other:2},
+  ruralExp:[],
+  teaching:[],
+  countdowns:[],xpLog:[],nextQuestId:8,nextEntryId:100,
+  // Attributes - point-based, linked to habits
+  attributes:{
+    strength:{points:0,lastActive:null,daysMissed:0},
+    creativity:{points:0,lastActive:null,daysMissed:0},
+    intelligence:{points:0,lastActive:null,daysMissed:0},
+    discipline:{points:0,lastActive:null,daysMissed:0},
+  },
+  // Weekly sport tracking
+  sportWeekCount:0,
+  sportWeekStart:null,
+  gymLastDone:(()=>{const d=new Date();d.setDate(d.getDate()-2);return d.toDateString();})(),
+};
+
+// ======================================================
+// PERSISTENCE — IndexedDB primary, localStorage fallback
+// IndexedDB survives "Clear History & Website Data" in Safari
+// localStorage is a fallback and mirrors the same data
+// ======================================================
+const DB_NAME='hunter_system';const DB_STORE='state';const DB_KEY='main';
+let db=null;
+
+function openDB(){
+  return new Promise((resolve,reject)=>{
+    if(db){resolve(db);return;}
+    const req=indexedDB.open(DB_NAME,1);
+    req.onupgradeneeded=e=>{e.target.result.createObjectStore(DB_STORE);}
+    req.onsuccess=e=>{db=e.target.result;resolve(db);}
+    req.onerror=()=>reject(req.error);
+  });
+}
+
+function saveState(){
+  const json=JSON.stringify(state);
+  // Always mirror to localStorage as immediate backup
+  try{localStorage.setItem('sys_state_v3',json);}catch(e){}
+  // Primary save to IndexedDB (async, fire-and-forget)
+  openDB().then(database=>{
+    const tx=database.transaction(DB_STORE,'readwrite');
+    tx.objectStore(DB_STORE).put(json,DB_KEY);
+  }).catch(()=>{});// silently fall back to localStorage only
+}
+
+function loadState(){
+  return new Promise(resolve=>{
+    // Try IndexedDB first
+    openDB().then(database=>{
+      const tx=database.transaction(DB_STORE,'readonly');
+      const req=tx.objectStore(DB_STORE).get(DB_KEY);
+      req.onsuccess=()=>{
+        const idbData=req.result;
+        // Also check localStorage — use whichever has more XP (most recent)
+        let lsData=null;
+        try{const ls=localStorage.getItem('sys_state_v3');if(ls)lsData=ls;}catch(e){}
+        let best=null;
+        if(idbData&&lsData){
+          const idbParsed=JSON.parse(idbData),lsParsed=JSON.parse(lsData);
+          best=(idbParsed.xp||0)>=(lsParsed.xp||0)?idbData:lsData;
+        }else{
+          best=idbData||lsData;
+        }
+        if(best)applyLoadedState(JSON.parse(best));
+        resolve();
+      };
+      req.onerror=()=>{
+        // Fall back to localStorage
+        try{const ls=localStorage.getItem('sys_state_v3');if(ls)applyLoadedState(JSON.parse(ls));}catch(e){}
+        resolve();
+      };
+    }).catch(()=>{
+      try{const ls=localStorage.getItem('sys_state_v3');if(ls)applyLoadedState(JSON.parse(ls));}catch(e){}
+      resolve();
+    });
+  });
+}
+
+function applyLoadedState(p){
+  state=Object.assign({},state,p);
+  if(!state.publications)state.publications=[];
+  if(!state.presentations)state.presentations=[];
+  if(!state.qualifications)state.qualifications=[];
+  if(!state.ruralExp)state.ruralExp=[];
+  if(!state.teaching)state.teaching=[];
+  if(!state.courses)state.courses={asset:false,ccrisp:false,emst:false,tips:false,sjt:false};
+  if(!state.eligibility)state.eligibility={};
+  if(!state.surgRotations)state.surgRotations={ohns:2,other:2};
+  if(!state.attributes)state.attributes={strength:{points:0,lastActive:null,daysMissed:0},creativity:{points:0,lastActive:null,daysMissed:0},intelligence:{points:0,lastActive:null,daysMissed:0},discipline:{points:0,lastActive:null,daysMissed:0}};
+  if(!state.sportWeekCount)state.sportWeekCount=0;
+  if(!state.sportWeekStart)state.sportWeekStart=null;
+  if(state.gymLastDone===undefined)state.gymLastDone=null;
+}
+
+// ======================================================
+// EXPORT / IMPORT BACKUP
+// ======================================================
+function exportBackup(){
+  const json=JSON.stringify(state,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const date=new Date().toISOString().slice(0,10);
+  a.href=url;a.download=`hunter_backup_${date}.json`;
+  document.body.appendChild(a);a.click();
+  document.body.removeChild(a);URL.revokeObjectURL(url);
+  showNotif('Backup exported — save the file somewhere safe.');
+}
+
+function importBackup(){
+  const input=document.createElement('input');
+  input.type='file';input.accept='.json,application/json';
+  input.onchange=e=>{
+    const file=e.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      try{
+        const parsed=JSON.parse(ev.target.result);
+        if(!parsed.xp&&parsed.xp!==0){showNotif('⚠ Invalid backup file.');return;}
+        applyLoadedState(parsed);
+        saveState();
+        // Re-render everything
+        setEl('hunter-name-display',state.name);
+        renderSkills();renderQuests();renderHabits();renderAchievements();renderCountdowns();
+        renderAttributes();updateXPUI();updateNFUI();updateTimeBlocks();renderMissionPage();
+        showNotif(`✓ Backup restored! Welcome back, ${state.name}.`);
+      }catch(err){showNotif('⚠ Could not read backup file.');}
+    };
+    reader.readAsText(file);
+  };
+  document.body.appendChild(input);input.click();document.body.removeChild(input);
+}
+
+// ======================================================
+// NAVIGATION
+// ======================================================
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>{
+    if(b.textContent.toLowerCase().includes(id.slice(0,4)))b.classList.add('active');
+  });
+  if(id==='mission')renderMissionPage();
+  if(id==='skills')renderSkills();
+  if(id==='log'){renderXPLogFull();renderStorageStatus();}
+}
+
+// ======================================================
+// XP & LEVELS
+// ======================================================
+function addXP(amount,reason){
+  state.xp+=amount;
+  state.xpLog.unshift({amount,reason,ts:new Date().toLocaleTimeString()});
+  if(state.xpLog.length>50)state.xpLog.pop();
+  checkLevelUp();updateXPUI();saveState();
+}
+// XP curve: level = floor(100 * cbrt(xp / XP_100))
+// XP_100 = 1,582,275 = 3 years of daily full effort (~1445 XP/day)
+// Level 100 requires 3 years. Beyond 100 the cube-root keeps going with no cap.
+const XP_100 = 1582275;
+function levelFromXP(xp){ return Math.max(1,Math.floor(100*Math.cbrt(Math.max(0,xp)/XP_100))); }
+function xpForLevel(lv){ return Math.round(XP_100*Math.pow(lv/100,3)); }
+function checkLevelUp(){
+  const newLv=levelFromXP(state.xp);
+  if(newLv>state.level){state.level=newLv;showLevelUp(newLv);}
+}
+function getRank(lv){
+  if(lv>=100)return{label:'NATIONAL LEVEL',cls:'rank-national'};
+  if(lv>=70)return{label:'SS/SSS-RANK',cls:'rank-ss'};
+  if(lv>=60)return{label:'S-RANK',cls:'rank-s'};
+  if(lv>=40)return{label:'A-RANK',cls:'rank-a'};
+  if(lv>=20)return{label:'B-RANK',cls:'rank-b'};
+  if(lv>=8)return{label:'C-RANK',cls:'rank-c'};
+  if(lv>=4)return{label:'D-RANK',cls:'rank-d'};
+  return{label:'E-RANK',cls:'rank-e'};
+}
+function updateXPUI(){
+  const lv=state.level;
+  const xpNext=xpForLevel(lv+1);
+  const xpThis=xpForLevel(lv);
+  const pct=Math.min(100,((state.xp-xpThis)/(xpNext-xpThis))*100);
+  ['level-display'].forEach(id=>setEl(id,lv));
+  ['header-badge','mission-badge','skills-badge'].forEach(id=>setEl(id,'LV.'+lv));
+  // Update rank badge
+  const rank=getRank(lv);
+  const badge=document.getElementById('hunter-rank-badge');
+  if(badge){badge.textContent=rank.label;badge.className='hunter-rank-badge '+rank.cls;}
+  setEl('xp-display',`XP: ${state.xp} / ${xpNext}`);
+  document.getElementById('xp-bar').style.width=pct+'%';
+  setEl('stat-study',state.studyHoursTotal.toFixed(1)+'h');
+  setEl('stat-streak',state.streak);
+  setEl('stat-quests',state.questsCompleted);
+  renderXPLogMini();
+}
+function setEl(id,val){const e=document.getElementById(id);if(e)e.textContent=val}
+
+// ======================================================
+// TIMER
+// ======================================================
+let timerInterval=null,timerSec=0,timerRunning=false;
+function startTimer(){
+  if(timerRunning)return;
+  timerRunning=true;
+  document.getElementById('btn-start').classList.add('active');
+  timerInterval=setInterval(()=>{timerSec++;updateTimerDisplay();},1000);
+}
+// pending session held here until confirmed
+let pendingSession = null;
+
+function stopTimer(){
+  if(!timerRunning)return;
+  timerRunning=false;clearInterval(timerInterval);
+  document.getElementById('btn-start').classList.remove('active');
+
+  const skillId=document.getElementById('timer-skill-select').value;
+  const skill=skillId?state.skills.find(s=>s.id===skillId):null;
+  const hrs=timerSec/3600;
+  const mins=timerSec/60;
+
+  // Work out proportional quest XP
+  // Quest base durations (minutes): study=60, research=60, guitar=10, piano=10, language=10, sport=30, gym=60
+  const questBaseMins={study:60,research:60,guitar:10,piano:10,language:10,sport:30,gym:60};
+  // Quest base XP matching the quests defined in state
+  const questBaseXP={study:100,research:120,guitar:40,piano:40,language:40,sport:70,gym:90};
+  const baseMin=questBaseMins[skillId]||0;
+  const baseXP=questBaseXP[skillId]||0;
+  const multiplier=baseMin>0?mins/baseMin:0;
+  const questXP=baseMin>0?Math.round(multiplier*baseXP):0;
+  const timerXP=Math.floor(hrs*200);
+
+  // Store pending session
+  pendingSession={skillId,skill,hrs,mins,timerSec:timerSec,timerXP,questXP,multiplier,baseMin};
+
+  // Build summary text
+  let summary=`Duration: <strong style="color:var(--cyan)">${formatTime(timerSec)}</strong><br>`;
+  if(skill)summary+=`Skill: <strong style="color:var(--cyan)">${skill.name}</strong><br>`;
+  summary+=`Timer XP: <strong style="color:var(--xp-color)">+${timerXP}</strong><br>`;
+  if(questXP>0){
+    const mult=multiplier.toFixed(1);
+    summary+=`Quest bonus: <strong style="color:var(--success)">+${questXP} XP</strong> <span style="color:var(--text-muted)">(${mult}× ${baseMin}min base)</span>`;
+  }else if(skillId&&!baseMin){
+    summary+=`<span style="color:var(--text-muted)">No quest linked to this skill</span>`;
+  }
+
+  document.getElementById('timer-confirm-summary').innerHTML=summary;
+  document.getElementById('timer-confirm').style.display='block';
+}
+
+function confirmSession(){
+  if(!pendingSession)return;
+  const {skillId,skill,hrs,timerXP,questXP}=pendingSession;
+
+  // Add hours to skill
+  if(skill){
+    skill.hours+=hrs;
+    if(skillId==='study'||skillId==='research')state.studyHoursTotal+=hrs;
+  }
+
+  // Award timer XP
+  if(timerXP>0)addXP(timerXP,`Timer: ${formatTime(pendingSession.timerSec)}${skill?' — '+skill.name:''}`);
+
+  // Award proportional quest XP and mark quest progress
+  if(questXP>0){
+    addXP(questXP,`Quest bonus: ${skill?skill.name:skillId} session`);
+    // Auto-complete the matching quest if it hasn't been done yet
+    const matchedQuest=state.quests.find(q=>!q.weekly&&!q.completed&&q.type===skillId);
+    if(matchedQuest){
+      matchedQuest.completed=true;
+      state.questsCompleted++;
+      // Special gym handling: record gymLastDone and auto-complete habit
+      if(matchedQuest.alternateDay&&skillId==='gym'){
+        if(!isGymDay()){
+          // rest day — don't auto-complete, just award XP
+          matchedQuest.completed=false;state.questsCompleted--;
+          showNotif(`+${timerXP+questXP} XP — Rest day, gym quest unlocks tomorrow`);
+        }else{
+          state.gymLastDone=new Date().toDateString();
+          const gymHabit=state.habits.find(h=>h.id==='gym-h');
+          if(gymHabit&&!gymHabit.done){gymHabit.done=true;gymHabit.streak++;addXP(30,'Habit: Gym session');}
+          showNotif(`💪 +${timerXP+questXP} XP — Gym quest auto-completed! Next gym day in 2 days`);
+          renderHabits();
+        }
+      }else{
+        showNotif(`+${timerXP+questXP} XP — Quest "${matchedQuest.text}" auto-completed!`);
+      }
+    }else{
+      showNotif(`+${timerXP+questXP} XP logged for ${skill?skill.name:skillId} session`);
+    }
+    renderQuests();
+  }else{
+    showNotif(`+${timerXP} XP logged`);
+  }
+
+  // Attribute boost
+  const attrMap={gym:'strength',sport:'strength',guitar:'creativity',piano:'creativity',study:'intelligence',research:'intelligence',language:'intelligence'};
+  if(skillId&&attrMap[skillId])gainAttribute(attrMap[skillId],1,skill?skill.name:skillId);
+
+  checkAchievements();renderSkills();renderAttributes();updateXPUI();saveState();
+  dismissConfirm();
+}
+
+function discardSession(){
+  showNotif('Session discarded — timer cleared.');
+  dismissConfirm();
+}
+
+function dismissConfirm(){
+  pendingSession=null;
+  document.getElementById('timer-confirm').style.display='none';
+  timerSec=0;updateTimerDisplay();
+}
+
+function resetTimer(){
+  if(timerRunning){timerRunning=false;clearInterval(timerInterval);document.getElementById('btn-start').classList.remove('active');}
+  pendingSession=null;
+  document.getElementById('timer-confirm').style.display='none';
+  timerSec=0;updateTimerDisplay();
+}
+function updateTimerDisplay(){setEl('timer-display',formatTime(timerSec));}
+function formatTime(sec){const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60;return`${pad(h)}:${pad(m)}:${pad(s)}`}
+function pad(n){return n.toString().padStart(2,'0')}
+function updateTimerSubject(){
+  const skillId=document.getElementById('timer-skill-select').value;
+  const skill=state.skills.find(s=>s.id===skillId);
+  setEl('timer-subject-label',skill?skill.name:'SELECT SKILL ABOVE');
+}
+function renderTimerSkillSelect(){
+  const sel=document.getElementById('timer-skill-select');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">-- SELECT SKILL --</option>';
+  state.skills.forEach(s=>{
+    const opt=document.createElement('option');
+    opt.value=s.id;opt.textContent=s.name;
+    if(s.id===cur)opt.selected=true;
+    sel.appendChild(opt);
+  });
+}
+
+// ======================================================
+// WORK/SCREEN TIMERS
+// ======================================================
+let workRunning=false,screenRunning=false,workInterval=null,screenInterval=null;
+function toggleWorkTimer(){
+  if(workRunning){clearInterval(workInterval);workRunning=false;setEl('work-timer-btn','▶ START WORK');document.getElementById('work-block').classList.remove('active-timer');}
+  else{workRunning=true;setEl('work-timer-btn','■ STOP WORK');document.getElementById('work-block').classList.add('active-timer');workInterval=setInterval(()=>{state.workTimeSec++;updateTimeBlocks();},1000);}
+}
+function toggleScreenTimer(){
+  if(screenRunning){clearInterval(screenInterval);screenRunning=false;setEl('screen-timer-btn','▶ START SCREEN');document.getElementById('screen-block').classList.remove('active-timer');}
+  else{screenRunning=true;setEl('screen-timer-btn','■ STOP SCREEN');document.getElementById('screen-block').classList.add('active-timer');screenInterval=setInterval(()=>{state.screenTimeSec++;updateTimeBlocks();},1000);}
+}
+function updateTimeBlocks(){
+  const wh=Math.floor(state.workTimeSec/3600),wm=Math.floor((state.workTimeSec%3600)/60);
+  const sh=Math.floor(state.screenTimeSec/3600),sm=Math.floor((state.screenTimeSec%3600)/60);
+  setEl('work-time-display',`${wh}:${pad(wm)}`);setEl('screen-time-display',`${sh}:${pad(sm)}`);
+  const total=state.workTimeSec+state.screenTimeSec;
+  if(total>0){const r=Math.round((state.workTimeSec/total)*100);setEl('productivity-ratio',`Productivity ratio: ${r}%`);}
+}
+
+// ======================================================
+// NF TRACKER
+// ======================================================
+function addNF(){
+  const minInput=document.getElementById('nf-min-input');
+  const mins=parseInt(minInput.value)||5;
+  state.nfCount++;state.nfTimeSec+=mins*60;minInput.value='';
+  let discMsg='';
+  if(state.nfCount===1){discMsg=' Discipline at risk (NF×1).';}
+  else if(state.nfCount===2){discMsg=' ⚠ Discipline -1 at end of day (NF≥2).';}
+  else{discMsg=` ⚠ NF×${state.nfCount} — discipline penalty active.`;}
+  updateNFUI();renderAttributes();showNotif(`NF logged: ${mins}min.${discMsg}`);saveState();
+}
+function updateNFUI(){
+  setEl('nf-count',state.nfCount);
+  const totalMins=Math.round(state.nfTimeSec/60);
+  setEl('nf-time-display',totalMins<60?`${totalMins}m`:`${(totalMins/60).toFixed(1)}h`);
+  const studySec=(state.studyHoursTotal)*3600;
+  const focusPct=studySec+state.nfTimeSec>0?Math.round((studySec/(studySec+state.nfTimeSec))*100):100;
+  const fsEl=document.getElementById('focus-score');
+  if(fsEl){fsEl.textContent=focusPct+'%';fsEl.style.color=focusPct>=80?'var(--success)':focusPct>=50?'var(--warn)':'var(--danger)';}
+  const nb=document.getElementById('nf-bar');if(nb)nb.style.width=focusPct+'%';
+  setEl('nf-streak-text',state.nfCount===0?'Clean today — maintain discipline':`${state.nfCount} NF today — refocus hunter`);
+  setEl('stat-focus',focusPct+'%');
+}
+
+// ======================================================
+// SKILLS
+// ======================================================
+function skillLevel(hours,target){return Math.min(100,Math.floor(Math.sqrt(hours/target)*100))}
+function renderSkills(){
+  const list=document.getElementById('skills-list');
+  if(!list)return;
+  list.innerHTML='';
+  state.skills.forEach(skill=>{
+    const lv=skillLevel(skill.hours,skill.target);
+    const pct=Math.min(100,(skill.hours/skill.target)*100);
+    const div=document.createElement('div');div.className='skill-item';
+    div.innerHTML=`
+      <div class="skill-header">
+        <div class="skill-name">${skill.name}<span class="skill-lv">LV${lv}</span></div>
+        <div class="skill-hours">${skill.hours.toFixed(1)}h / ${skill.target}h</div>
+      </div>
+      <div class="skill-bar-wrap"><div class="skill-bar-fill" style="width:${pct}%"></div></div>
+      <div class="skill-row-controls">
+        <button class="skill-timer-btn" onclick="quickAddHours('${skill.id}',0.33)">+20min</button>
+        <button class="skill-timer-btn" onclick="quickAddHours('${skill.id}',0.5)">+30min</button>
+        <button class="skill-timer-btn" onclick="quickAddHours('${skill.id}',1)">+1h</button>
+        <button class="skill-timer-btn" onclick="quickAddHours('${skill.id}',2)">+2h</button>
+        <button class="skill-delete-btn" onclick="deleteSkill('${skill.id}')">✕</button>
+      </div>`;
+    list.appendChild(div);
+  });
+  renderTimerSkillSelect();
+}
+function quickAddHours(skillId,hrs){
+  const skill=state.skills.find(s=>s.id===skillId);
+  if(!skill)return;
+  skill.hours+=hrs;
+  if(skillId==='study'||skillId==='research')state.studyHoursTotal+=hrs;
+  const xpEarned=Math.floor(hrs*150);
+  addXP(xpEarned,`+${hrs.toFixed(2)}h ${skill.name}`);
+  // Boost linked attribute (1 point per session regardless of duration)
+  const attrMap={gym:'strength',sport:'strength',guitar:'creativity',piano:'creativity',study:'intelligence',research:'intelligence',language:'intelligence'};
+  const attr=attrMap[skillId];
+  if(attr)gainAttribute(attr,1,skill.name);
+  showNotif(`+${(hrs*60).toFixed(0)}min logged for ${skill.name} (+${xpEarned} XP)`);
+  checkAchievements();renderSkills();saveState();
+}
+function addSkill(){
+  const nameEl=document.getElementById('new-skill-name'),targetEl=document.getElementById('new-skill-target');
+  const name=nameEl.value.trim().toUpperCase(),target=parseInt(targetEl.value)||10000;
+  if(!name)return;
+  state.skills.push({id:'skill_'+Date.now(),name,hours:0,target,timerSec:0});
+  nameEl.value='';targetEl.value='';renderSkills();saveState();showNotif(`Skill added: ${name}`);
+}
+function deleteSkill(skillId){
+  state.skills=state.skills.filter(s=>s.id!==skillId);renderSkills();saveState();
+}
+
+// ======================================================
+// QUESTS
+// ======================================================
+function isGymDay(){
+  // Gym is active every other day. If never done, today is a gym day.
+  if(!state.gymLastDone)return true;
+  const last=new Date(state.gymLastDone);
+  const today=new Date();today.setHours(0,0,0,0);last.setHours(0,0,0,0);
+  const diffDays=Math.round((today-last)/86400000);
+  return diffDays>=2; // gym day if 2+ days since last session
+}
+
+function renderQuests(){
+  const list=document.getElementById('quests-list');if(!list)return;
+  list.innerHTML='';
+  state.quests.forEach(quest=>{
+    const isRestDay=quest.alternateDay&&!isGymDay();
+    const div=document.createElement('div');
+    div.className='quest-item'+(quest.completed?' completed':'')+(quest.negative?' negative':'')+(isRestDay?' rest-day':'');
+    let badge='';
+    if(quest.weekly){
+      const wk=getWeekStart();
+      if(state.sportWeekStart!==wk)state.sportWeekCount=0;
+      const done=Math.min(quest.weeklyTarget,state.sportWeekCount);
+      badge=`<span class="quest-weekly">${done}/${quest.weeklyTarget} WK</span>`;
+    }
+    if(quest.alternateDay){
+      if(isRestDay){
+        badge=`<span class="quest-rest-badge">REST DAY</span>`;
+      }else{
+        const last=state.gymLastDone;
+        const daysAgo=last?Math.round((new Date()-new Date(last))/86400000):null;
+        badge=`<span class="quest-gym-badge">GYM DAY${daysAgo!==null?' · '+daysAgo+'d rest':''}</span>`;
+      }
+    }
+    div.innerHTML=`
+      <div class="quest-check"><span class="quest-check-mark">✓</span></div>
+      <div class="quest-text">${quest.text}</div>
+      ${badge}
+      <div class="quest-xp">${quest.negative?'-':'+'} ${quest.xp} XP</div>
+      <button class="quest-delete-btn" onclick="deleteQuest(${quest.id})">✕</button>`;
+    if(!isRestDay){
+      div.querySelector('.quest-check').addEventListener('click',()=>toggleQuest(quest.id));
+      div.querySelector('.quest-text').addEventListener('click',()=>toggleQuest(quest.id));
+    }
+    list.appendChild(div);
+  });
+}
+function getWeekStart(){
+  const d=new Date();d.setHours(0,0,0,0);
+  d.setDate(d.getDate()-d.getDay());
+  return d.toDateString();
+}
+function toggleQuest(id){
+  const quest=state.quests.find(q=>q.id===id);
+  if(!quest)return;
+  if(quest.weekly){
+    const wk=getWeekStart();
+    if(state.sportWeekStart!==wk){state.sportWeekStart=wk;state.sportWeekCount=0;}
+    if(state.sportWeekCount>=quest.weeklyTarget){showNotif('Weekly sport target already met!');return;}
+    state.sportWeekCount++;
+    addXP(quest.xp,`Quest: ${quest.text}`);
+    showNotif(`Sport session logged! ${state.sportWeekCount}/${quest.weeklyTarget} this week (+${quest.xp} XP)`);
+    gainAttribute('strength',1,'Sport session');
+    checkAchievements();renderQuests();updateXPUI();saveState();
+    return;
+  }
+  if(quest.alternateDay){
+    if(!isGymDay()){showNotif('Rest day — gym quest available tomorrow.');return;}
+    if(quest.completed){showNotif('Gym already logged today!');return;}
+    quest.completed=true;state.questsCompleted++;
+    state.gymLastDone=new Date().toDateString();
+    addXP(quest.xp,`Quest: Gym session`);
+    gainAttribute('strength',1,'Gym session');
+    showNotif(`💪 Gym session logged! +${quest.xp} XP · Strength +1 · Next gym day in 2 days`);
+    // Also complete the gym habit if present
+    const gymHabit=state.habits.find(h=>h.id==='gym-h');
+    if(gymHabit&&!gymHabit.done){gymHabit.done=true;gymHabit.streak++;addXP(30,'Habit: Gym session');}
+    checkAchievements();renderQuests();renderHabits();renderAttributes();updateXPUI();saveState();
+    return;
+  }
+  if(quest.completed)return;
+  quest.completed=true;state.questsCompleted++;
+  addXP(quest.xp,`Quest: ${quest.text}`);
+  showNotif(`Quest complete! +${quest.xp} XP`);
+  checkAchievements();renderQuests();updateXPUI();saveState();
+}
+function deleteQuest(id){state.quests=state.quests.filter(q=>q.id!==id);renderQuests();saveState();}
+function addQuest(){
+  const textEl=document.getElementById('new-quest-text'),xpEl=document.getElementById('new-quest-xp');
+  const text=textEl.value.trim(),xp=parseInt(xpEl.value)||50;
+  if(!text)return;
+  state.quests.push({id:state.nextQuestId++,text,xp,completed:false,negative:false});
+  textEl.value='';xpEl.value='';renderQuests();saveState();
+}
+
+// ======================================================
+// HABITS (linked to attributes)
+// ======================================================
+// Habit → attribute mapping
+const HABIT_ATTRS = {
+  'gym-h':     ['strength'],
+  'sport-h':   ['strength'],
+  'guitar-h':  ['creativity'],
+  'piano-h':   ['creativity'],
+  'study-h':   ['intelligence'],
+  'research-h':['intelligence'],
+  'lang-h':    ['intelligence'],
+  'sleep-h':   ['discipline'],
+};
+
+function renderHabits(){
+  const list=document.getElementById('habits-list');if(!list)return;
+  list.innerHTML='';
+  state.habits.forEach(habit=>{
+    const attrs=HABIT_ATTRS[habit.id]||[];
+    const attrLabels=attrs.map(a=>({
+      strength:'💪 STR',creativity:'🎨 CRE',intelligence:'🧠 INT',discipline:'⚔️ DIS'
+    }[a]||a)).join(' ');
+    const div=document.createElement('div');div.className='habit-item';
+    div.innerHTML=`
+      <div class="habit-dot${habit.done?' done':''}" onclick="toggleHabit('${habit.id}')"></div>
+      <div class="habit-name">${habit.name}</div>
+      ${attrLabels?`<div style="font-family:var(--font-ui);font-size:10px;color:var(--text-muted);letter-spacing:1px">${attrLabels}</div>`:''}
+      <div class="habit-streak">🔥${habit.streak}</div>`;
+    list.appendChild(div);
+  });
+}
+
+function toggleHabit(id){
+  const habit=state.habits.find(h=>h.id===id);
+  if(!habit||habit.done)return;
+  habit.done=true;habit.streak++;
+  addXP(30,`Habit: ${habit.name}`);
+  showNotif(`Habit logged: ${habit.name} (+30 XP)`);
+  // Link to attributes
+  const attrs=HABIT_ATTRS[id]||[];
+  attrs.forEach(attr=>gainAttribute(attr,1,habit.name));
+  renderHabits();renderAttributes();saveState();
+}
+
+// ======================================================
+// ATTRIBUTES ENGINE
+// ======================================================
+function gainAttribute(attr,amount,source){
+  if(!state.attributes[attr])return;
+  state.attributes[attr].points=Math.max(0,(state.attributes[attr].points||0)+amount);
+  state.attributes[attr].lastActive=new Date().toDateString();
+  state.attributes[attr].daysMissed=0;
+  renderAttributes();
+}
+
+function loseAttribute(attr,amount){
+  if(!state.attributes[attr])return;
+  state.attributes[attr].points=Math.max(0,(state.attributes[attr].points||0)-amount);
+  renderAttributes();
+}
+
+function renderAttributes(){
+  const grid=document.getElementById('attr-grid');if(!grid)return;
+  const defs=[
+    {key:'strength', label:'STRENGTH', icon:'💪', desc:'Gym · Sport'},
+    {key:'creativity',label:'CREATIVITY',icon:'🎨', desc:'Guitar · Piano'},
+    {key:'intelligence',label:'INTELLIGENCE',icon:'🧠',desc:'Study · Research · Language'},
+    {key:'discipline',label:'DISCIPLINE',icon:'⚔️', desc:'NF Control'},
+  ];
+  grid.innerHTML='';
+  defs.forEach(def=>{
+    const a=state.attributes[def.key]||{points:0,daysMissed:0};
+    const pts=Math.max(0,a.points||0);
+    // Points needed per tier thresholds (for bar visual — max display 100)
+    const barPct=Math.min(100,pts);
+    const missed=a.daysMissed||0;
+    let decayClass='attr-decay-ok', decayMsg='';
+    if(missed>=5){decayClass='attr-decay-danger';decayMsg=`⚠ ${missed}d inactive — DECAYING`;}
+    else if(missed>=3){decayClass='attr-decay-warn';decayMsg=`${missed}d inactive — decay warning`;}
+    else if(missed>0){decayClass='attr-decay-warn';decayMsg=`${missed}d since last activity`;}
+    else{decayMsg='Active';}
+    const card=document.createElement('div');
+    card.className=`attr-card attr-${def.key}`;
+    card.innerHTML=`
+      <div class="attr-card-top">
+        <span class="attr-icon">${def.icon}</span>
+        <div class="attr-card-left">
+          <div class="attr-name">${def.label}</div>
+        </div>
+      </div>
+      <div class="attr-points">${pts}</div>
+      <div class="attr-label">POINTS</div>
+      <div class="attr-desc-text">${def.desc}</div>
+      <div class="attr-bar-wrap"><div class="attr-bar-fill" style="width:${barPct}%"></div></div>
+      <div class="attr-decay ${decayClass}">${decayMsg}</div>`;
+    grid.appendChild(card);
+  });
+}
+
+// NF discipline logic — called from addNF and daily reset
+function applyNFDiscipline(){
+  if(state.nfCount===0){
+    gainAttribute('discipline',2,'No NF today');
+  }else if(state.nfCount===1){
+    gainAttribute('discipline',1,'NF ≤1 today');
+  }else if(state.nfCount>=2){
+    loseAttribute('discipline',1);
+    showNotif('⚠ Discipline -1 (NF ≥2 today)');
+  }
+}
+
+// Decay check — called each day on reset
+function checkAttributeDecay(){
+  const today=new Date().toDateString();
+  Object.keys(state.attributes).forEach(key=>{
+    const a=state.attributes[key];
+    const last=a.lastActive;
+    if(!last){a.daysMissed=(a.daysMissed||0)+1;}
+    else{
+      const diffMs=new Date(today)-new Date(last);
+      const diffDays=Math.floor(diffMs/86400000);
+      a.daysMissed=diffDays;
+    }
+    // Drop 1 point per day after 5 days missed
+    if((a.daysMissed||0)>5){
+      a.points=Math.max(0,(a.points||0)-1);
+    }
+  });
+  renderAttributes();
+}
+
+// ======================================================
+// ACHIEVEMENTS
+// ======================================================
+function renderAchievements(){
+  const grid=document.getElementById('achievements-grid');if(!grid)return;
+  grid.innerHTML='';
+  state.achievements.forEach(a=>{
+    const div=document.createElement('div');div.className='achievement-item'+(a.unlocked?' unlocked':'');
+    div.title=a.desc;
+    div.innerHTML=`<div class="achievement-icon">${a.icon}</div><div class="achievement-name">${a.name}</div>`;
+    grid.appendChild(div);
+  });
+}
+function checkAchievements(){
+  const unlock=id=>{const a=state.achievements.find(a=>a.id===id);if(a&&!a.unlocked){a.unlocked=true;showAchievementPopup(a.name);renderAchievements();saveState();}};
+  if(state.studyHoursTotal>=0.1)unlock('first-study');
+  if(state.studyHoursTotal>=10)unlock('scholar-10');
+  if(state.level>=5)unlock('level-5');if(state.level>=10)unlock('level-10');
+  const studySec=state.studyHoursTotal*3600;
+  const fp=studySec+state.nfTimeSec>0?Math.round((studySec/(studySec+state.nfTimeSec))*100):100;
+  if(fp>=90&&state.studyHoursTotal>1)unlock('focus-master');
+  if(state.nfCount===0&&state.studyHoursTotal>0)unlock('nf-control');
+  const research=state.skills.find(s=>s.id==='research');
+  if(research&&research.hours>=0.1)unlock('surgeon-path');
+  if(state.skills.some(s=>s.hours>=100))unlock('skill-100');
+  if(state.streak>=7)unlock('consistency');
+  if(state.publications.length>0)unlock('first-pub');
+  if(state.presentations.length>0)unlock('first-pres');
+  // Shadow Monarch — all achievements + level 100
+  if(state.level>=100&&state.achievements.every(a=>a.unlocked)){
+    const badge=document.getElementById('hunter-rank-badge');
+    if(badge){badge.textContent='SHADOW MONARCH';badge.className='hunter-rank-badge rank-monarch';}
+  }
+}
+
+// ======================================================
+// COUNTDOWNS
+// ======================================================
+function renderCountdowns(){
+  const list=document.getElementById('countdowns-list');if(!list)return;
+  list.innerHTML='';
+  if(!state.countdowns.length){list.innerHTML='<div style="font-family:var(--font-ui);font-size:12px;color:var(--text-muted);text-align:center;padding:10px">No countdowns set</div>';return;}
+  state.countdowns.forEach((cd,i)=>{
+    const target=new Date(cd.date),now=new Date(),diff=target-now;
+    const days=Math.max(0,Math.floor(diff/86400000)),hours=Math.max(0,Math.floor((diff%86400000)/3600000));
+    const div=document.createElement('div');div.className='countdown-item';
+    div.innerHTML=`
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div class="countdown-name">${cd.name.toUpperCase()}</div>
+        <button class="skill-delete-btn" onclick="deleteCountdown(${i})">✕</button>
+      </div>
+      <div class="countdown-time">${days}D ${hours}H</div>
+      <div class="countdown-sub">${new Date(cd.date).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})}</div>`;
+    list.appendChild(div);
+  });
+}
+function addCountdown(){
+  const n=document.getElementById('cd-name'),d=document.getElementById('cd-date');
+  if(!n.value.trim()||!d.value)return;
+  state.countdowns.push({name:n.value.trim(),date:d.value});
+  n.value='';d.value='';renderCountdowns();saveState();
+}
+function deleteCountdown(i){state.countdowns.splice(i,1);renderCountdowns();saveState();}
+
+// ======================================================
+// MISSION PAGE
+// ======================================================
+
+// SCORING
+function calcMissionScores(){
+  // Publications (max 4)
+  let pubScore=Math.min(4,state.publications.reduce((s,p)=>s+p.points,0));
+  // Presentations (max 2)
+  let presScore=Math.min(2,state.presentations.reduce((s,p)=>s+p.points,0));
+  // Qualifications (max 5)
+  let qualScore=Math.min(5,state.qualifications.reduce((s,q)=>s+q.points,0));
+  // Surgical experience (max 6)
+  let surgScore=Math.min(6,Math.min(4,state.surgRotations.ohns*2)+Math.min(2,state.surgRotations.other*1));
+  // Rural origin (max 1) — tick box only
+  let ruralOriginScore=state.eligibility['rural-origin']?1:0;
+
+  const cvTotal=pubScore+presScore+qualScore+surgScore+ruralOriginScore;
+  const cvMax=18;
+  const cvPct=Math.round((cvTotal/cvMax)*100);
+
+  return{pubScore,presScore,qualScore,surgScore,ruralOriginScore,cvTotal,cvMax,cvPct};
+}
+
+function renderMissionPage(){
+  const s=calcMissionScores();
+
+  // Score cards
+  setEl('m-cv-score',s.cvTotal.toFixed(1));
+  setEl('m-pub-score',s.pubScore.toFixed(1));
+  setEl('m-pres-score',s.presScore.toFixed(2));
+  setEl('m-qual-score',s.qualScore.toFixed(1));
+  setEl('m-cv-pct',s.cvPct+'%');
+  const bar=document.getElementById('m-cv-bar');if(bar)bar.style.width=Math.min(100,s.cvPct)+'%';
+
+  // Eligibility count
+  const eligKeys=['residency','registration','iwr','gsse','eligform','ohns10','surg20','ed8','icu8','onlinereg','appdocs','referees'];
+  const eligDone=eligKeys.filter(k=>state.eligibility[k]).length;
+  setEl('elig-score-label',`${eligDone} / 12`);
+
+  // Home page sync
+  setEl('mission-cv-pct-home',`${s.cvTotal.toFixed(1)} / ${s.cvMax} pts`);
+  const homeBar=document.getElementById('mission-cv-bar-home');if(homeBar)homeBar.style.width=Math.min(100,s.cvPct)+'%';
+  setEl('mission-cv-status-home',s.cvPct>=50?`✓ Above 50% threshold (${s.cvPct}%)`:`Below 50% threshold (${s.cvPct}%)`);
+  setEl('home-pub-score',s.pubScore.toFixed(1));
+  setEl('home-pres-score',s.presScore.toFixed(2));
+  setEl('home-qual-score',s.qualScore.toFixed(1));
+  setEl('home-elig-done',`${eligDone}/12`);
+
+  // Surg score
+  setEl('surg-score-label',`${Math.min(6,s.surgScore).toFixed(0)} / 6 pts`);
+  const ohnsIn=document.getElementById('ohns-rotations');if(ohnsIn)ohnsIn.value=state.surgRotations.ohns;
+  const otherIn=document.getElementById('other-rotations');if(otherIn)otherIn.value=state.surgRotations.other;
+  setEl('ohns-rot-pts',`${Math.min(4,state.surgRotations.ohns*2)}pts`);
+  setEl('other-rot-pts',`${Math.min(2,state.surgRotations.other*1)}pts`);
+
+  // Rural origin
+  setEl('rural-origin-score',state.eligibility['rural-origin']?'1 / 1 pt':'0 / 1 pt');
+
+
+  // Eligibility items
+  eligKeys.forEach(k=>{
+    const el=document.getElementById('elig-'+k);
+    if(el){
+      const dot=el.querySelector('.elig-dot'),status=el.querySelector('.elig-status');
+      if(dot)dot.className='elig-dot'+(state.eligibility[k]?' done':'');
+      if(status){status.textContent=state.eligibility[k]?'✓':'—';status.style.color=state.eligibility[k]?'var(--success)':'var(--text-muted)';}
+    }
+  });
+  const rOriginEl=document.getElementById('elig-rural-origin');
+  if(rOriginEl){
+    const dot=rOriginEl.querySelector('.elig-dot'),status=rOriginEl.querySelector('.elig-status');
+    if(dot)dot.className='elig-dot'+(state.eligibility['rural-origin']?' done':'');
+    if(status){status.textContent=state.eligibility['rural-origin']?'✓':'—';status.style.color=state.eligibility['rural-origin']?'var(--success)':'var(--text-muted)';}
+  }
+
+  renderEntryList('pub-list',state.publications,'pub-score-label',4,p=>`${p.title} (${p.year}) — ${p.points}pt`,'deletePublication');
+  renderEntryList('pres-list',state.presentations,'pres-score-label',2,p=>`${p.title} (${p.year}) — ${p.points}pt`,'deletePresentation');
+  renderEntryList('qual-list',state.qualifications,'qual-score-label',5,q=>`${q.title} — ${q.points}pt`,'deleteQual');
+
+  saveState();
+}
+
+function renderEntryList(listId,items,scoreLabelId,max,labelFn,deleteFn){
+  const list=document.getElementById(listId);if(!list)return;
+  list.innerHTML='';
+  const total=items.reduce((s,item)=>s+item.points,0);
+  const capped=max?Math.min(max,total):total;
+  if(scoreLabelId)setEl(scoreLabelId,`${capped.toFixed(1)}${max?' / '+max+' pts':' pts'}`);
+  items.forEach((item,i)=>{
+    const div=document.createElement('div');div.className='entry-item';
+    div.innerHTML=`
+      <div class="entry-text">${labelFn(item)}</div>
+      <button class="entry-delete" onclick="${deleteFn}(${i})">✕</button>`;
+    list.appendChild(div);
+  });
+}
+
+// ADD ENTRIES
+function addPublication(){
+  const title=document.getElementById('pub-title').value.trim();
+  const points=parseFloat(document.getElementById('pub-type').value);
+  const year=parseInt(document.getElementById('pub-year').value)||new Date().getFullYear();
+  if(!title)return;
+  state.publications.push({id:'pub_'+Date.now(),title,points,year});
+  document.getElementById('pub-title').value='';
+  document.getElementById('pub-year').value='';
+  addXP(points*100,`Publication added: ${title}`);
+  showNotif(`Publication added: +${points*100} XP`);
+  checkAchievements();renderMissionPage();saveState();
+}
+function deletePublication(i){state.publications.splice(i,1);renderMissionPage();}
+
+function addPresentation(){
+  const title=document.getElementById('pres-title').value.trim();
+  const points=parseFloat(document.getElementById('pres-type').value);
+  const year=parseInt(document.getElementById('pres-year').value)||new Date().getFullYear();
+  if(!title)return;
+  state.presentations.push({id:'pres_'+Date.now(),title,points,year});
+  document.getElementById('pres-title').value='';
+  document.getElementById('pres-year').value='';
+  addXP(points*80,`Presentation: ${title}`);
+  showNotif(`Presentation added! +${Math.floor(points*80)} XP`);
+  checkAchievements();renderMissionPage();saveState();
+}
+function deletePresentation(i){state.presentations.splice(i,1);renderMissionPage();}
+
+function addQualification(){
+  const name=document.getElementById('qual-name').value.trim();
+  const points=parseFloat(document.getElementById('qual-type').value);
+  if(!name)return;
+  state.qualifications.push({id:'qual_'+Date.now(),title:name,points,year:new Date().getFullYear()});
+  document.getElementById('qual-name').value='';
+  addXP(points*120,`Qualification: ${name}`);
+  showNotif(`Qualification added: +${Math.floor(points*120)} XP`);
+  renderMissionPage();saveState();
+}
+function deleteQual(i){state.qualifications.splice(i,1);renderMissionPage();}
+
+function addRural(){
+  const name=document.getElementById('rural-name').value.trim();
+  const points=parseFloat(document.getElementById('rural-type').value);
+  if(!name)return;
+  state.ruralExp.push({id:'rural_'+Date.now(),name,points});
+  document.getElementById('rural-name').value='';
+  addXP(points*80,`Rural exp: ${name}`);
+  renderMissionPage();saveState();
+}
+function deleteRural(i){state.ruralExp.splice(i,1);renderMissionPage();}
+
+function addTeaching(){
+  const desc=document.getElementById('teach-desc').value.trim();
+  const points=parseFloat(document.getElementById('teach-type').value);
+  if(!desc)return;
+  state.teaching.push({id:'teach_'+Date.now(),desc,points});
+  document.getElementById('teach-desc').value='';
+  addXP(points*80,`Teaching: ${desc}`);
+  renderMissionPage();saveState();
+}
+function deleteTeaching(i){state.teaching.splice(i,1);renderMissionPage();}
+
+function updateSurgScore(){
+  state.surgRotations.ohns=Math.min(2,Math.max(0,parseInt(document.getElementById('ohns-rotations').value)||0));
+  state.surgRotations.other=Math.min(2,Math.max(0,parseInt(document.getElementById('other-rotations').value)||0));
+  renderMissionPage();
+}
+
+function toggleElig(key){
+  state.eligibility[key]=!state.eligibility[key];
+  renderMissionPage();saveState();
+}
+function toggleCourse(key){
+  state.courses[key]=!state.courses[key];
+  renderMissionPage();saveState();
+}
+
+// ======================================================
+// NOTIFICATIONS
+// ======================================================
+function showNotif(text){
+  setEl('notif-text',text);
+  const el=document.getElementById('sys-notif');if(el)el.style.display='flex';
+}
+function dismissNotif(){const el=document.getElementById('sys-notif');if(el)el.style.display='none';}
+let achTimeout=null;
+function showAchievementPopup(name){
+  const popup=document.getElementById('achievement-popup');
+  setEl('achievement-popup-name',name);
+  popup.classList.add('show');
+  if(achTimeout)clearTimeout(achTimeout);
+  achTimeout=setTimeout(()=>popup.classList.remove('show'),4000);
+}
+function showLevelUp(lv){
+  setEl('levelup-num',lv);
+  document.getElementById('levelup-popup').classList.add('show');
+  showNotif(`LEVEL UP! You are now Level ${lv}!`);
+}
+function closeLevelup(){document.getElementById('levelup-popup').classList.remove('show');}
+
+// ======================================================
+// HUNTER NAME
+// ======================================================
+function setName(){
+  const input=document.getElementById('name-input');
+  const name=input.value.trim().toUpperCase();
+  if(!name)return;
+  state.name=name;setEl('hunter-name-display',name);input.value='';saveState();
+  showNotif(`Hunter name set: ${name}`);
+}
+
+// ======================================================
+// XP LOG
+// ======================================================
+function renderXPLogMini(){
+  const log=document.getElementById('xp-log-mini');if(!log)return;
+  if(!state.xpLog.length){log.innerHTML='<div style="color:var(--text-muted);text-align:center;padding:12px">No XP yet</div>';return;}
+  log.innerHTML=state.xpLog.slice(0,10).map(e=>`
+    <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(0,245,255,.05)">
+      <span style="color:var(--text-secondary);font-size:11px">${e.reason}</span>
+      <span style="color:var(--xp-color);font-family:var(--font-title);font-size:11px">+${e.amount}</span>
+    </div>`).join('');
+}
+function renderXPLogFull(){
+  const log=document.getElementById('xp-log-full');if(!log)return;
+  if(!state.xpLog.length){log.innerHTML='<div style="color:var(--text-muted);text-align:center;padding:20px">No XP earned yet</div>';return;}
+  log.innerHTML=state.xpLog.map((e,i)=>`
+    <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(0,245,255,.05)">
+      <span style="color:var(--text-muted);font-size:11px;min-width:65px">${e.ts}</span>
+      <span style="color:var(--text-secondary);flex:1;padding:0 8px">${e.reason}</span>
+      <span style="color:var(--xp-color);font-family:var(--font-title);font-size:12px">+${e.amount}</span>
+    </div>`).join('');
+}
+
+// ======================================================
+// STORAGE STATUS
+// ======================================================
+function renderStorageStatus(){
+  const el=document.getElementById('storage-status');if(!el)return;
+  const json=JSON.stringify(state);
+  const kb=(new TextEncoder().encode(json).length/1024).toFixed(1);
+  const lsOk=()=>{try{return!!localStorage.getItem('sys_state_v3');}catch(e){return false;}};
+  openDB().then(database=>{
+    const tx=database.transaction(DB_STORE,'readonly');
+    const req=tx.objectStore(DB_STORE).get(DB_KEY);
+    req.onsuccess=()=>{
+      const idbOk=!!req.result;
+      el.innerHTML=`
+        <div style="display:flex;gap:16px;flex-wrap:wrap">
+          <span style="color:${idbOk?'var(--success)':'var(--danger)'}">● IndexedDB: ${idbOk?'SAVED':'NOT FOUND'}</span>
+          <span style="color:${lsOk()?'var(--success)':'var(--warn)'}">● localStorage: ${lsOk()?'MIRRORED':'EMPTY'}</span>
+          <span style="color:var(--text-muted)">● Size: ${kb} KB</span>
+          <span style="color:var(--text-muted)">● XP: ${state.xp} · Level ${state.level}</span>
+        </div>`;
+    };
+    req.onerror=()=>{el.innerHTML='<span style="color:var(--warn)">Could not read IndexedDB status</span>';};
+  }).catch(()=>{el.innerHTML='<span style="color:var(--warn)">IndexedDB not available — localStorage only</span>';});
+}
+
+// ======================================================
+// CLOCK
+// ======================================================
+function updateClock(){
+  const now=new Date();
+  const t=`${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  ['header-clock','mission-clock','skills-clock','log-clock'].forEach(id=>setEl(id,t));
+}
+
+// ======================================================
+// DAILY RESET
+// ======================================================
+function checkDailyReset(){
+  const today=new Date().toDateString();
+  if(state.lastActive&&state.lastActive!==today){
+    // Apply NF discipline score for the day that just ended BEFORE resetting nfCount
+    applyNFDiscipline();
+    // Decay attributes that haven't been touched
+    checkAttributeDecay();
+    // Reset daily state
+    state.habits.forEach(h=>h.done=false);
+    state.nfCount=0;state.nfTimeSec=0;state.streak++;
+    state.lastActive=today;
+    state.quests.forEach(q=>{
+      if(q.weekly)return; // weekly resets handled separately
+      if(q.alternateDay){q.completed=false;return;} // always allow re-check each day
+      q.completed=false;
+    });
+    const decayWarnings=Object.entries(state.attributes)
+      .filter(([,a])=>(a.daysMissed||0)>5)
+      .map(([k])=>k.toUpperCase());
+    const decayMsg=decayWarnings.length?` ⚠ DECAYING: ${decayWarnings.join(', ')}`:' All attributes stable.';
+    showNotif(`New day! Streak: ${state.streak}.${decayMsg}`);
+    saveState();
+  }else if(!state.lastActive){state.lastActive=today;saveState();}
+}
+
+// ======================================================
+// INIT
+// ======================================================
+function init(){
+  loadState().then(()=>{
+    checkDailyReset();
+    setEl('hunter-name-display',state.name);
+    renderSkills();renderQuests();renderHabits();renderAchievements();renderCountdowns();
+    renderAttributes();
+    updateXPUI();updateNFUI();updateTimeBlocks();
+    renderMissionPage();
+    setInterval(updateClock,1000);
+    setInterval(renderCountdowns,60000);
+    setInterval(saveState,30000);
+    updateClock();
+    setTimeout(()=>{
+      document.getElementById('activation-screen').classList.add('fade-out');
+      setTimeout(()=>{document.getElementById('activation-screen').style.display='none';},1000);
+    },2800);
+  });
+}
+window.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>
